@@ -57,7 +57,7 @@ func ParseIni (file *io.Reader) (IniFile, error) {
 }
 
 
-func parseLine (line string) (string, string, lineType) {
+func parseLine (line string) (string, string, LineType) {
     line = strings.Trim(line, " ")
 
     if strings.HasPrefix(line, "[") {
@@ -66,7 +66,7 @@ func parseLine (line string) (string, string, lineType) {
 
     //FIXME Get correct comment delimiter for ini files
     if strings.HasPrefix(line, "#") || strings.HasPrefix(line, "") {
-        return line, "", Comment
+        return line, "", CommentLine
     }
 
     val := strings.Split(line, "=")
