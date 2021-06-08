@@ -31,9 +31,9 @@ func (e ErrBadLine) Error() string {
     return strings.Join(slice, "\n")
 }
 
-func ParseIni (file *io.Reader) (IniFile, error) {
+func ParseIni (file io.Reader) (IniFile, error) {
 
-    fileScanner := bufio.NewScanner(*file)
+    fileScanner := bufio.NewScanner(file)
     iniFile := make(map[string]Section)
     curSection := ""
     
@@ -46,6 +46,11 @@ func ParseIni (file *io.Reader) (IniFile, error) {
         if lineType == SectionLine {
             curSection = val
         } else if lineType == EntryLine {
+
+            if iniFile[curSection] ==  nil {
+                iniFile[curSection] = make(map[string]string)
+            }
+
             iniFile[curSection][val] = opt
         } else if lineType == BadLine {
             err := ErrBadLine{line: line}
@@ -65,12 +70,12 @@ func parseLine (line string) (string, string, LineType) {
     }
 
     //FIXME Get correct comment delimiter for ini files
-    if strings.HasPrefix(line, "#") || strings.HasPrefix(line, "") {
+    if strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
         return line, "", CommentLine
     }
 
     val := strings.Split(line, "=")
-    if len(val) == 2 {
+    if len(val) > 1 {
         return val[0], val[1], EntryLine
     }
 

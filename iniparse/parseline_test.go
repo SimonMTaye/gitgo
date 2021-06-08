@@ -31,6 +31,14 @@ func TestParseLineComment(t *testing.T) {
             "Got:\n\t%s\n\tLine Type: %d", 
             line, CommentLine, com, linetype)
     }
+    line = ";Some comment"
+    com, _,linetype = parseLine(line)
+    if com != line || linetype != CommentLine {
+        t.Errorf(
+            "Error parsing comment line.\nExpected:\n\t%s\n\tLine Type: %d\n" +
+            "Got:\n\t%s\n\tLine Type: %d", 
+            line, CommentLine, com, linetype)
+    }
 }
 
 func TestParseLineEntry(t *testing.T) {
