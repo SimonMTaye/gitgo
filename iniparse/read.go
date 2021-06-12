@@ -4,7 +4,6 @@ import (
     "io"
     "strings"
     "bufio"
-
 )
 
 // The type of line parseLine can return
@@ -38,6 +37,7 @@ func ParseIni (file io.Reader) (IniFile, error) {
 
     for ; r ; r = fileScanner.Scan() {
         line := fileScanner.Text()
+        //val: value, opt: optional (is empty unless parseLine finds a entry line
         val, opt, lineType := parseLine(line)
 
         if lineType == SectionLine {
