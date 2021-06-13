@@ -35,14 +35,9 @@ func TestDefaultConfig(t *testing.T) {
 }
 
 func TestCreateRepoWithDefaultParams(t *testing.T) {
-    cwd, _ := os.Getwd()
-    tmpDir, err := os.MkdirTemp(cwd, "*")
-    if err != nil {
-        t.Errorf ("Error creating temp directory:\n%s", err.Error())
-    }
-    defer os.RemoveAll(tmpDir)
+    tmpDir := t.TempDir()
 
-    err = CreateRepo(tmpDir, "", "")
+    err := CreateRepo(tmpDir, "", "")
     if err != nil {
         t.Errorf("CreateRepo returned unexpected error:\n%s" , err.Error())
     }
@@ -124,17 +119,12 @@ func TestCreateRepoWithDefaultParams(t *testing.T) {
 }
 
 func TestCreateRepoWorktreeAndDescription(t *testing.T) {
-    cwd, _ := os.Getwd()
-    tmpDir, err := os.MkdirTemp(cwd, "*")
-    if err != nil {
-        t.Errorf ("Error creating temp directory:\n%s", err.Error())
-    }
-    defer os.RemoveAll(tmpDir)
+    tmpDir := t.TempDir()
 
     sampleDescription := "hello world"
     worktreeDir := path.Join(tmpDir, "random")
     sampleConfig := defaultConfig(worktreeDir)
-    err = CreateRepo(tmpDir, sampleDescription, worktreeDir)
+    err := CreateRepo(tmpDir, sampleDescription, worktreeDir)
     if err != nil {
         t.Errorf("CreateRepo returned unexpected error:\n%s" , err.Error())
     }
@@ -156,14 +146,4 @@ func TestCreateRepoWorktreeAndDescription(t *testing.T) {
         t.Errorf("'config' file\nExpected:\n%s\nGot:\n%s", expectedIni.String(), 
         configIni.String())
     }
-}
-
-// Helper function to iterate over list of diretories/files and check for certain names
-func exists (entries []os.DirEntry, name string) bool {
-    for _, entry := range entries {
-        if entry.Name() == name {
-            return true
-        }
-    }
-    return false
 }
