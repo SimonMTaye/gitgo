@@ -36,7 +36,7 @@ func (iFile *IniFile) String () string {
         if section == "" {
             continue
         }
-        myString += "[" + section + "]"
+        myString += "[" + section + "]\n"
         myString += sectionMap.String()
     }
     return strings.Trim(myString, "\n")
