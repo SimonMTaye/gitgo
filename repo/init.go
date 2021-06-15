@@ -16,7 +16,6 @@ const DIR_FILEMODE = 1023
 
 // Create the ".git" directory and the necessary files and dirs
 // Will throw and error if ".git" already exists
-
 // cwd: Current working directory where ".git" folder will be created
 // description: repo description
 // worktree: location for worktree
@@ -87,6 +86,7 @@ func CreateRepo(cwd string, description string, worktree string) error {
     return err
 }
 
+//Returns a string representation of the default config file used for .git directories
 func defaultConfig(worktree string) string {
     config := make(iniparse.IniFile)
     config.SetProperty("core", "repositoryformatversion", "0")

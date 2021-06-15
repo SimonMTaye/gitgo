@@ -27,15 +27,18 @@ func (e ErrBadLine) Error() string {
     return strings.Join(slice, "\n")
 }
 
+//Takes an io.Reader and parses into an iniFile
+//If an error is encoutered, returns the parsed iniFile so far and the error
+//Otherwise, returns the iniFile and nil
 func ParseIni (file io.Reader) (IniFile, error) {
 
     fileScanner := bufio.NewScanner(file)
     iniFile := make(IniFile)
     curSection := ""
     
-    r := fileScanner.Scan()
+    ok := fileScanner.Scan()
 
-    for ; r ; r = fileScanner.Scan() {
+    for ; ok ; ok = fileScanner.Scan() {
         line := fileScanner.Text()
         //val: value, opt: optional (is empty unless parseLine finds a entry line
         val, opt, lineType := parseLine(line)
@@ -59,6 +62,12 @@ func ParseIni (file io.Reader) (IniFile, error) {
 }
 
 
+//Parses a line of an iniFile and returns the line type as well as two strings
+//For a 'EntryLine', the two strings correspond to the key-value pair, respectively.
+//For 'CommentLine' and 'SectionLine', the second string is "" with the the first string
+//containing the entire line for comments and the section name between the '[' ']' for
+//section line.
+//Space at the end of strings is trimmed before being returned
 func parseLine (line string) (string, string, LineType) {
     line = strings.Trim(line, " ")
 
