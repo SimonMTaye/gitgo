@@ -58,7 +58,7 @@ func TestFindRepoOnNoRepo(t *testing.T) {
         t.Errorf("FindRepo returned an unexpected string:\n%s", repo1)
     }
 
-    _, ok := err.(*ErrNoRepositoryFound)
+    _, ok := err.(ErrNoRepositoryFound)
     if !ok {
         if err != nil {
             t.Errorf("FindRepo returned an unexpected error:\n%s", err.Error())
@@ -133,12 +133,17 @@ func TestOpenRepoWithBranches(t *testing.T) {
         t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
         err.Error())
     }
+
     if repo.repoPath != tmpDir || len(repo.branches) != 1 || repo.worktree != tmpDir {
         t.Errorf("Repo object is different from expected.\n" +
         "Expected repoPath: %s, Got: %s\n" +
         "Expected worktree: %s, Got: %s\n" +
         "Expected repo branch: 1, Got: %d\n", 
         tmpDir, repo.repoPath, tmpDir, repo.worktree, len(repo.branches))
+    }
+
+    if repo.branches[0].name != "main" {
+        t.Errorf("Expected branch name to be 'main', Got: %s", repo.branches[0].name)
     }
 }
 

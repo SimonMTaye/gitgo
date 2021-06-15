@@ -105,7 +105,7 @@ func getBranchesFromConfigIni (configIni *iniparse.IniFile) ([]Branch, error) {
     branches := make([]Branch, 0)
     for sections := range *configIni {
         if strings.HasPrefix(sections, "branch") {
-            branches = append(branches, Branch {name: strings.Split(sections, " ")[1]})
+            branches = append(branches, Branch {name: strings.Trim(strings.Split(sections, " ")[1], "\"")})
         }
     }
     return branches, nil
