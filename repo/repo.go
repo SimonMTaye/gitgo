@@ -9,7 +9,7 @@ import (
 
 
 type Repo struct {
-    repoPath string
+    gitDir string
     worktree string
     branches []Branch
 }
@@ -35,6 +35,15 @@ func (e ErrNoRepository) Error() string {
 
 func (e ErrNoRepositoryFound) Error() string {
     return "Could not find repository in the directory or its parents: " + e.dir
+}
+// Find a ref in a repo. Simply calls the readRef function defined in refs.go
+func (repo *Repo) FindRef(refPath string) (string, error) {
+    return readRef(repo.gitDir, refPath)
+}
+// Return a map off all refs and what they point to as a key-value pair, respectively. 
+// Calls findAllRefs defined in refs.go
+func (repo *Repo) GetAllRefs() (map[string]string, error) {
+    return findAllRefs(repo.gitDir)
 }
 
 // Checks the current directory for a ".git" directory, returns an error if it is not found
@@ -68,7 +77,7 @@ func OpenRepo (dir string) (*Repo, error) {
         return nil, err
     }
 
-    repo := Repo{ repoPath: dir, branches: branches}
+    repo := Repo{ gitDir: gitDir, branches: branches}
 
     worktree, ok := configIni["core"]["worktree"]
     if ok {
