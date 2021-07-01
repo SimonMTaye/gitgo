@@ -240,6 +240,11 @@ func (commit *GitCommit) Serialize() []byte {
 
     return bytes
 }
+
+// String form of commit
+func (commit *GitCommit) Stringer() string {
+    return string(commit.Serialize())
+}
 // Calculates the size of a commit object in bytes, updates the size field in the struct
 // and returns the size
 func (commit *GitCommit) computeSize() int {

@@ -18,6 +18,8 @@ type GitObject interface {
     Deserialize(data []byte)
     // Convert object data into bytes
     Serialize() []byte
+    //String form of object. Most objects can simply use their serialize functions
+    Stringer() string
 }
 
 // Denote the object type

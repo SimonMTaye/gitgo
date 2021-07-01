@@ -84,6 +84,16 @@ func (tree *GitTree) Serialize() []byte {
     }
     return serializedTree
 }
+
+// Returns the tree as a string
+func (tree *GitTree) Stringer() string {
+    treeString := ""
+    for _, entry := range tree.entries {
+        treeString +=  entry.Stringer() + "\n"
+    }
+    return treeString
+}
+
 // Convert a byte slice into a tree
 // Should not include the header bytes
 func (tree *GitTree) Deserialize(src []byte) {

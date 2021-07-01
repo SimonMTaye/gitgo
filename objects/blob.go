@@ -18,6 +18,11 @@ func (obj *GitBlob) Serialize() []byte {
     return obj.data
 }
 
+// Returns the blob's content
+func (blob *GitBlob) Stringer() string {
+    return string(blob.data)
+}
+
 // Sets the data field of the GitBlob struct
 func (obj *GitBlob) Deserialize(src []byte) {
     obj.data = src
