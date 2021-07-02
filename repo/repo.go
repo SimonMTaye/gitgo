@@ -1,3 +1,4 @@
+// Functions for finding and opening a repo and creating a repo struct
 package repo
 
 import ( 
@@ -28,22 +29,12 @@ type ErrNoRepositoryFound struct {
     dir string
 }
 
-
-func (e ErrNoRepository) Error() string {
+func (e *ErrNoRepository) Error() string {
     return "Directory does not contain a repository: "+ e.dir
 }
 
-func (e ErrNoRepositoryFound) Error() string {
+func (e *ErrNoRepositoryFound) Error() string {
     return "Could not find repository in the directory or its parents: " + e.dir
-}
-// Find a ref in a repo. Simply calls the readRef function defined in refs.go
-func (repo *Repo) FindRef(refPath string) (string, error) {
-    return readRef(repo.gitDir, refPath)
-}
-// Return a map off all refs and what they point to as a key-value pair, respectively. 
-// Calls findAllRefs defined in refs.go
-func (repo *Repo) GetAllRefs() (map[string]string, error) {
-    return findAllRefs(repo.gitDir)
 }
 
 // Checks the current directory for a ".git" directory, returns an error if it is not found
@@ -57,7 +48,7 @@ func OpenRepo (dir string) (*Repo, error) {
     }
 
     if !exists(dirs, ".git") {
-        return nil, ErrNoRepository{dir: dir}
+        return nil, &ErrNoRepository{dir: dir}
     }
 
     // Open the "config" file
@@ -104,7 +95,7 @@ func FindRepo (cwd string) (string, error) {
 
         curDir = path.Join(curDir, "..")
     }
-    return "", ErrNoRepositoryFound{dir: cwd}
+    return "", &ErrNoRepositoryFound{dir: cwd}
 }
 
 // Read Branch information from the config file

@@ -1,3 +1,4 @@
+// Functions for finding and resolving refs in a repo
 package repo
 
 import (
@@ -19,11 +20,17 @@ func readRef(gitDir string, refPath string) (string, error) {
     ref := string(refData)
 
     // This ref is a ref to another ref
-    if strings.HasPrefix(ref, "ref: ") {
+    if isRef(ref) {
         newRefPath := strings.TrimPrefix(ref, "ref: ")
         return readRef(gitDir, newRefPath)
     }
     return string(ref), nil
+}
+
+// Checks whether the passed string is a ref or not
+// Helper functino for clarity
+func isRef(unknown string) bool {
+    return strings.HasPrefix(unknown, "ref: ") 
 }
 
 // Find all the refs in a repo and the hashes of what they are pointing to
@@ -70,4 +77,13 @@ func recursiveFindFiles(root string, subpath string) ([]string, error) {
     }
     return files, nil
 }
+// Find a ref in a repo. Simply calls the readRef function defined in refs.go
+func (repo *Repo) FindRef(refPath string) (string, error) {
+    return readRef(repo.gitDir, refPath)
+}
 
+// Return a map off all refs and what they point to as a key-value pair, respectively. 
+// Calls findAllRefs defined in refs.go
+func (repo *Repo) GetAllRefs() (map[string]string, error) {
+    return findAllRefs(repo.gitDir)
+}
