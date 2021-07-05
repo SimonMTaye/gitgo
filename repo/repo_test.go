@@ -58,7 +58,7 @@ func TestFindRepoOnNoRepo(t *testing.T) {
         t.Errorf("FindRepo returned an unexpected string:\n%s", repo1)
     }
 
-    _, ok := err.(ErrNoRepositoryFound)
+    _, ok := err.(*ErrNoRepositoryFound)
     if !ok {
         if err != nil {
             t.Errorf("FindRepo returned an unexpected error:\n%s", err.Error())
@@ -84,12 +84,12 @@ func TestOpenRepo(t *testing.T) {
         err.Error())
     }
 
-    if repo.repoPath != tmpDir || len(repo.branches) != 0 || repo.worktree != "random" {
+    if repo.gitDir != path.Join(tmpDir, ".git") || len(repo.branches) != 0 || repo.worktree != "random" {
         t.Errorf("Repo object is different from expected.\n" +
         "Expected repoPath: %s, Got: %s\n" +
         "Expected worktree: %s, Got: %s\n" +
         "Expected no repo branches, Got: %d\n", 
-        tmpDir, repo.repoPath, "random", repo.worktree, len(repo.branches))
+        tmpDir, repo.gitDir, "random", repo.worktree, len(repo.branches))
     }
 
 }
@@ -134,12 +134,12 @@ func TestOpenRepoWithBranches(t *testing.T) {
         err.Error())
     }
 
-    if repo.repoPath != tmpDir || len(repo.branches) != 1 || repo.worktree != tmpDir {
+    if repo.gitDir != path.Join(tmpDir, ".git") || len(repo.branches) != 1 || repo.worktree != tmpDir {
         t.Errorf("Repo object is different from expected.\n" +
         "Expected repoPath: %s, Got: %s\n" +
         "Expected worktree: %s, Got: %s\n" +
         "Expected repo branch: 1, Got: %d\n", 
-        tmpDir, repo.repoPath, tmpDir, repo.worktree, len(repo.branches))
+        tmpDir, repo.gitDir, tmpDir, repo.worktree, len(repo.branches))
     }
 
     if repo.branches[0].name != "main" {
