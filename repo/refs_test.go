@@ -158,3 +158,32 @@ func TestReadRef (t *testing.T) {
     }
 }
 
+func TestSaveTag (t *testing.T) {
+    tmpDir := t.TempDir()
+    err := CreateRepo(tmpDir, "", "")
+    if err != nil {
+        t.Fatalf("Unexpected error when creating a new repository for testing:\n%s",
+        err.Error())
+    }
+
+    repo, err := OpenRepo(tmpDir)
+    if err != nil {
+        t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
+        err.Error())
+    }
+
+    err = repo.SaveTag("test", "hello world")
+    if err != nil {
+        t.Fatalf("Unexpected error when saving tag:\n%s", err.Error())
+    }
+
+    tagContent, err := repo.FindObject("test")
+     if err != nil {
+        t.Fatalf("Unexpected error when reading tag:\n%s", err.Error())
+    }
+
+    if tagContent != "hello world" {
+        t.Errorf("Expected tag to contain %s, Got: %s", "hello world", tagContent)
+    }
+}
+

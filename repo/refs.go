@@ -8,6 +8,14 @@ import (
     )
 
 
+type ErrTagAlreadyExists struct {
+    name string
+}
+
+func (e *ErrTagAlreadyExists) Error() string {
+    return "refs/tags/" + e.name + " already exists"
+}
+
 // Plumbing function; find the hash a 'ref' refers too;
 // usually this is simply finding the ref file and reading the hash
 // The function may also recursively call itself in the case where refs point to other
@@ -24,11 +32,11 @@ func readRef(gitDir string, refPath string) (string, error) {
         newRefPath := strings.TrimPrefix(ref, "ref: ")
         return readRef(gitDir, newRefPath)
     }
-    return string(ref), nil
+    return ref, nil
 }
 
 // Checks whether the passed string is a ref or not
-// Helper functino for clarity
+// Helper function for clarity
 func isRef(unknown string) bool {
     return strings.HasPrefix(unknown, "ref: ") 
 }
@@ -86,4 +94,26 @@ func (repo *Repo) FindRef(refPath string) (string, error) {
 // Calls findAllRefs defined in refs.go
 func (repo *Repo) GetAllRefs() (map[string]string, error) {
     return findAllRefs(repo.gitDir)
+}
+
+// Saves a tag with the given 'name' that points the object of the corresponding hash
+// This function does not verify that the hash is valid, that is the caller's responsibility
+// An error is thrown if the tag already exists
+func (repo *Repo) SaveTag(name string, hash string) error {
+    tagsDir := path.Join(repo.gitDir, "refs", "tags")
+    // Check that the tag doesn't already exist
+    entries, err := os.ReadDir(tagsDir)
+    if err != nil {
+        return err
+    }
+    if exists(entries, name) {
+        return &ErrTagAlreadyExists{name: name}
+    }
+    file, err := os.Create(path.Join(tagsDir, name))
+    if err != nil {
+        return err
+    }
+    _, err = file.WriteString(hash)
+    defer file.Close()
+    return err
 }
