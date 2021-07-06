@@ -7,6 +7,14 @@ import (
     "io"
 )
 
+type ErrBadObject struct {
+    reason string
+}
+
+func (e *ErrBadObject) Error() string {
+    return "Could not read object: " + e.reason
+}
+
 // Interface for all Git objects
 type GitObject interface {
     // A string of the object type; using a custom type for clarity
@@ -15,6 +23,7 @@ type GitObject interface {
     Size() string
     // Parse a bunch of bytes into meaningful data
     // Header should NOT be part of the bytes
+    // Function will return an error if the object is incorrectly formatted
     Deserialize(data []byte)
     // Convert object data into bytes
     Serialize() []byte
@@ -31,8 +40,9 @@ const (
     Tag GitObjectType = "tag"
 )
 
+// TODO test
 // Compress a git object and writes it to an io.Writer
-func Compress(dst io.Writer, obj GitObject) error {
+func CompressAndSave(dst io.Writer, obj GitObject) error {
     zWriter := zlib.NewWriter(dst)
     // Write the object Header
     zWriter.Write(Header(obj))
@@ -41,6 +51,57 @@ func Compress(dst io.Writer, obj GitObject) error {
     return zWriter.Close()
 }
 
+// TODO test
+// Decompress contents in src and parse the resulting data as an object
+func DecompressAndRead(src io.Reader) (GitObject, error) {
+    zReader, err := zlib.NewReader(src)
+    defer zReader.Close()
+    if err != nil {
+        return nil, err
+    }
+    // Arbitrarily chosen. Most git objects are <200 from experience blobs may be higher. 
+    // 300 feels like a good middle ground between too many allocations and too much memory
+    data, err := io.ReadAll(zReader)
+    if err != nil {
+        return nil, err
+    }
+    return Deserialize(data)
+}
+
+// TODO test
+// Read a bunch of bytes and return the correct object
+func Deserialize(src []byte) (GitObject, error) {
+    nulPos := 0
+    // Increment nulPos until it is the index of the null byte at the end of the header
+    l := len(src)
+    for ; src[nulPos] != 0x00 ; nulPos ++ {
+        if nulPos == l - 1 {
+            return nil, &ErrBadObject{reason:"object is badly formed"}
+        }
+    }
+    objType, _, err := parseHeader(src[:nulPos + 1])
+    if err != nil {
+        return nil, err
+    }
+    var obj GitObject
+    switch objType {
+        case Commit:
+            obj = &GitCommit{}
+        case Tree:
+            obj = &GitTree{}
+        case Tag:
+            obj = &GitTag{}
+        case Blob:
+            obj = &GitBlob{}
+        default:
+            return nil, &ErrBadObject{reason:string(objType) + " is not a valid type"}
+    }
+    // TODO Added error checking once it has been added to objects
+    obj.Deserialize(src[nulPos+1:])
+    return obj, nil
+}
+
+// Helper function for reading an object's header and returing the relevant information
 func parseHeader(header []byte) (GitObjectType, int, error) {
 
     var objType GitObjectType
@@ -86,12 +147,3 @@ func Header(obj GitObject) []byte {
     typeSize := append(typeAndSpace, []byte(obj.Size())...)
     return append(typeSize, 0x00)
 }
-
-// Return a file path for the object based on its hash 
-// Returns: first-two-chars-of-hash/rest-of-hash
-func RelPath(obj GitObject) string {
-    hash := Hash(obj)
-    return hash[0:3] + "/" + hash[3:]
-}
-
-
