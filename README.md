@@ -10,9 +10,9 @@ Most functionality is now compelete.
 - [x] Create and read git objects (trees, blobs, commits and tags
 - [x] Parse index file (this file contains the data for the staging area)
 #### Remaining
-- [] Create tree/commit objects from the data in the index file
-- [] Branches (fairly simple once committing has been implemented
-- [] CLI commands
+- [ ] Create tree/commit objects from the data in the index file
+- [ ] Branches (fairly simple once committing has been implemented
+- [ ] CLI commands
 #### Will not be implemented
 - Merging, managing remote repositories or otherwirse interacting with other repos
     - While this part of git's core functionality, it is beyond the scope of this project
