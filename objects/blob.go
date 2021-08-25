@@ -19,7 +19,7 @@ func (obj *GitBlob) Serialize() []byte {
 }
 
 // Returns the blob's content
-func (blob *GitBlob) Stringer() string {
+func (blob *GitBlob) String() string {
     return string(blob.data)
 }
 

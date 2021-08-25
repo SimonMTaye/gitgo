@@ -79,7 +79,7 @@ func (tag *GitTag) Serialize() []byte {
 
     if tag.tagger != nil {
     bytes = append(bytes, "tagger "...)
-    bytes = append(bytes, tag.tagger.Stringer()...)
+    bytes = append(bytes, tag.tagger.String()...)
     bytes = append(bytes, '\n')
     }
 
@@ -91,7 +91,7 @@ func (tag *GitTag) Serialize() []byte {
 }
 
 // Returns the string form of a tag
-func (tag *GitTag) Stringer() string {
+func (tag *GitTag) String() string {
     return string(tag.Serialize())
 }
 // Compute the overall size of the tag (i.e. the amount of bytes it would take to store

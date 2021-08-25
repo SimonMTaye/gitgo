@@ -64,7 +64,7 @@ func (entry *treeEntry) Size() int {
     return len(entry.mode) + len(entry.name) + len(entry.hash) + 2
 }
 
-func (entry *treeEntry) Stringer() string {
+func (entry *treeEntry) String() string {
     return string(entry.mode) + " " + entry.name + " " + hex.EncodeToString(entry.hash)
 }
 
@@ -86,10 +86,10 @@ func (tree *GitTree) Serialize() []byte {
 }
 
 // Returns the tree as a string
-func (tree *GitTree) Stringer() string {
+func (tree *GitTree) String() string {
     treeString := ""
     for _, entry := range tree.entries {
-        treeString +=  entry.Stringer() + "\n"
+        treeString +=  entry.String() + "\n"
     }
     return treeString
 }

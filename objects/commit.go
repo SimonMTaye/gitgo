@@ -94,7 +94,7 @@ func fromOffsetString(offsetString string) (*timeOffset, error) {
     return &timeOffset{hours:hours, mins:mins, postive:postive}, nil
 }
 
-func (to *timeOffset) Stringer() string {
+func (to *timeOffset) String() string {
     offsetString := make([]byte, 0, 5)
     if to.postive {
         offsetString = append(offsetString, '+')
@@ -155,15 +155,15 @@ func idFromString (idString string) (*commitIdentity, error) {
     return &commitIdentity{name:name, email:email, time:int64(timeUnix), timezone: *timeOffset}, nil
 }
 // Returns a string form of an author/committer
-func (id *commitIdentity) Stringer() string {
-    return id.name + " <" + id.email + "> " + fmt.Sprint(id.time) + " " + id.timezone.Stringer()
+func (id *commitIdentity) String() string {
+    return id.name + " <" + id.email + "> " + fmt.Sprint(id.time) + " " + id.timezone.String()
 }
 
 // Returns the size of the commitIdentity in string format
 // implementation is a bit wasteful
 // optimize
 func (id *commitIdentity) Size() int {
-    return len(id.Stringer())
+    return len(id.String())
 }
 
 // Return 'commit'
@@ -221,13 +221,13 @@ func (commit *GitCommit) Serialize() []byte {
 
     if commit.author != nil {
     bytes = append(bytes, "author "...)
-    bytes = append(bytes, commit.author.Stringer()...)
+    bytes = append(bytes, commit.author.String()...)
     bytes = append(bytes, '\n')
     }
 
     if commit.committer != nil {
     bytes = append(bytes, "committer "...)
-    bytes = append(bytes, commit.author.Stringer()...)
+    bytes = append(bytes, commit.author.String()...)
     bytes = append(bytes, '\n')
     }
 
@@ -242,7 +242,7 @@ func (commit *GitCommit) Serialize() []byte {
 }
 
 // String form of commit
-func (commit *GitCommit) Stringer() string {
+func (commit *GitCommit) String() string {
     return string(commit.Serialize())
 }
 // Calculates the size of a commit object in bytes, updates the size field in the struct

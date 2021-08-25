@@ -17,14 +17,14 @@ func TestTag (t *testing.T) {
     size := tag.computeSize()
 
     if size != 138 {
-        t.Errorf("Expected tag size to be 138, Got: %d\nTag Object:\n%s", size, tag.Stringer())
+        t.Errorf("Expected tag size to be 138, Got: %d\nTag Object:\n%s", size, tag.String())
     }
 
     if hash != expectedHash {
         t.Errorf("Expected hash to be:\n%s\n Got:\n %s\nTag Object:\n%s ",
             expectedHash,
             hash,
-            tag.Stringer())
+            tag.String())
     }
 }
 
@@ -44,14 +44,14 @@ func TestTagDeserialize(t *testing.T) {
     size := tag.computeSize()
 
     if size != 138 {
-        t.Errorf("Expected tag size to be 138, Got: %d\nTag Object:\n%s", size, tag.Stringer())
+        t.Errorf("Expected tag size to be 138, Got: %d\nTag Object:\n%s", size, tag.String())
     }
 
     if hash != expectedHash {
         t.Errorf("Expected hash to be:\n%s\n Got:\n %s\nTag Object:\n%s ",
             expectedHash,
             hash,
-            tag.Stringer())
+            tag.String())
         }
     
 }
