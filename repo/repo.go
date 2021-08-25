@@ -5,14 +5,15 @@ import (
     "os"
     "path"
     "strings"
+    "errors"
     "github.com/SimonMTaye/gitgo/iniparse"
     )
 
 
 type Repo struct {
-    gitDir string
-    worktree string
-    branches []Branch
+    GitDir string
+    Worktree string
+    Branches []Branch
 }
 
 type Branch struct {
@@ -68,13 +69,13 @@ func OpenRepo (dir string) (*Repo, error) {
         return nil, err
     }
 
-    repo := Repo{ gitDir: gitDir, branches: branches}
+    repo := Repo{ GitDir: gitDir, Branches: branches}
 
     worktree, ok := configIni["core"]["worktree"]
     if ok {
-        repo.worktree = worktree
+        repo.Worktree = worktree
     } else {
-        repo.worktree = dir
+        repo.Worktree = dir
     }
     return &repo, nil
     
@@ -119,4 +120,28 @@ func exists (entries []os.DirEntry, name string) bool {
         }
     }
     return false
+}
+// Parse the index file of repo and return a struct representing the staging area
+func (repo *Repo) Index() (*Index, error) {
+    indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
+    if err != nil {
+        return nil, err
+    }
+    return ParseIndex(indexFile)
+}
+// Write an Index struct to the index file of the repo
+func (repo *Repo) WriteIndex(index *Index) error {
+    indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
+    if err != nil {
+        return err
+    }
+    indexBytes := index.ToBytes()
+    n, err := indexFile.Write(indexBytes)
+    if err != nil {
+        return err
+    }
+    if n != len(indexBytes) {
+        return errors.New("The bytes written to the index file are inconsistent")
+    }
+    return nil
 }
