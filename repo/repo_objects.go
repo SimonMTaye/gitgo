@@ -16,7 +16,6 @@ func (e *ErrObjectNotFound) Error() string {
         return e.query + " is not a valid object name\n"
 }
 
-//TODO test
 // Resolves name to a object hash-id
 // Functions works in this order:
 //     Check branch heads
@@ -25,7 +24,7 @@ func (e *ErrObjectNotFound) Error() string {
 // The last step requires that the hash id be at least 3 chars
 func (repo *Repo) FindObject(name string) (string, error) {
     if name == "HEAD" {
-        bytes, err := os.ReadFile(path.Join(repo.gitDir, "HEAD"))
+        bytes, err := os.ReadFile(path.Join(repo.GitDir, "HEAD"))
         if err != nil {
             return "", err
         }
@@ -58,7 +57,7 @@ func (repo *Repo) FindObject(name string) (string, error) {
         return "", &ErrObjectNotFound{query:name}
     }
 
-    objectDirs, err := os.ReadDir(path.Join(repo.gitDir, "objects"))
+    objectDirs, err := os.ReadDir(path.Join(repo.GitDir, "objects"))
     if err != nil {
         return "", nil
     }
@@ -67,7 +66,7 @@ func (repo *Repo) FindObject(name string) (string, error) {
         return "", &ErrObjectNotFound{query:name}
     }
 
-    objs, err := os.ReadDir(path.Join(repo.gitDir, "objects", name[:2]))
+    objs, err := os.ReadDir(path.Join(repo.GitDir, "objects", name[:2]))
     if err != nil {
         return "", err
     }
@@ -85,11 +84,10 @@ func (repo *Repo) FindObject(name string) (string, error) {
     return matches[0], nil
 }
 
-// TODO test
 // Return a GitObject from a valid hash
 // returns an error if the object is not found
 func (repo *Repo) GetObject(objectHash string) (objects.GitObject, error)  {
-    dir := path.Join(repo.gitDir, "objects", objectHash[:2])
+    dir := path.Join(repo.GitDir, "objects", objectHash[:2])
     objs, err := os.ReadDir(dir)
     if err != nil {
         return nil, err
@@ -105,14 +103,18 @@ func (repo *Repo) GetObject(objectHash string) (objects.GitObject, error)  {
     }
     return nil, &ErrObjectNotFound{query:objectHash}
 }
+// Delete an object from the database
+func (repo *Repo) DeleteObject(hash string) error {
+    objPath := path.Join(repo.GitDir, "objects", hash[:2], hash[2:])
+    return os.Remove(objPath)
+}
 
-// TODO Test
 // Save a git object to the repo
 func (repo *Repo) SaveObject(obj objects.GitObject) error {
     hash := objects.Hash(obj)
     // Check if the dir with the first two letters of the hash exists 
     // (eg. objects/0a where the hash is 0a32e1...)
-    objectsDir := path.Join(repo.gitDir, "objects")
+    objectsDir := path.Join(repo.GitDir, "objects")
     entries, err := os.ReadDir(objectsDir)
     if err != nil {
         return err
