@@ -78,7 +78,6 @@ func TestHeaderReading(t *testing.T) {
     }
 }
 
-// TODO Test Index Reading
 // Create a sample Index entry by hand, (that contains extension data) and check that it is
 // correctly read
 // TODO Test Index Writing
@@ -228,6 +227,224 @@ func TestIndexRead (t *testing.T) {
     }
 }
 
+func TestIndexExists (t *testing.T) {
+    header := make([]byte, 0, 12)
+    // Header signature
+    header = append(header, defaultSignature[0])
+    header = append(header, defaultSignature[1])
+    header = append(header, defaultSignature[2])
+    header = append(header, defaultSignature[3])
+    // Header version number, version number 3
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x3)
+    // Number of index entries, 2
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x2)
+    // COMPLETE HEADER
+    sampleHash := sha1.Sum(header)
+    // Entry where most values are 0
+    entry1, err := EntryBytes([2]int32{0, 1}, // ctime
+                         [2]int32{0, 1}, //mtime
+                         0, // dev
+                         0, // ino
+                         0, // mode
+                         0, // uid
+                         0, // gid
+                         0, // fileSize
+                         sampleHash, // hash
+                         "sample entry")
+    if err != nil {
+        t.Fatalf("Unexpected error when creating first entry:\n%s", err.Error())
+    }
+    // Adding padding bytes
+    if len(entry1) % 8 != 0 {
+        entry1 = append(entry1, make([]byte, 8 - (len(entry1) % 8))...)
+    }
+    // Entry2 will be somewhat representative of a real entry and hold either
+    // random data or data similar to real world values
+    now := time.Now()
+    ctime := [2]int32{int32(now.Second()), int32(now.Nanosecond())}
+    // Random
+    dev := uint32(2130821)
+    // Real-world
+    ino := uint32(402549)
+    modeBytes := make([]byte, 2, 4)
+    // 0x81 = 1000 0001
+    modeBytes = append(modeBytes, 0x81)
+    // 0xa4 = 1010 0100
+    modeBytes = append(modeBytes, 0xa4)
+    // Real-world
+    mode := binary.BigEndian.Uint32(modeBytes)
+    // Random
+    uid := uint32(312415223)
+    gid := uid
+    fileSize := int32(1024)
+    entry2, err := EntryBytes(ctime, // ctime
+                         ctime, //mtime
+                         dev, // dev
+                         ino, // ino
+                         mode, // mode
+                         uid, // uid
+                         gid, // gid
+                         fileSize, // fileSize
+                         sampleHash, // hash
+                         "README.md")
+    if err != nil {
+        t.Fatalf("Unexpected error when creating first entry:\n%s", err.Error())
+    }
+    if len(entry2) % 8 != 0 {
+        entry2 = append(entry2, make([]byte, 8 - (len(entry2) % 8))...)
+
+    }
+    // A simulated extension with garbage data
+    ext := make([]byte, 0, 19)
+    ext = append(ext, "TREE"...)
+    // Append 0000-0000 0000-0000 0000-0000 0000-1011
+    ext = append(ext, 0x0)
+    ext = append(ext, 0x0)
+    ext = append(ext, 0x0)
+    ext = append(ext, 0xb)
+    ext = append(ext, "hello world"...)
+    // Combine all the data into one byte slice
+    indexBytes := make([]byte, 0, len(header) + len(entry1) + len(entry2) + len(ext))
+    indexBytes = append(indexBytes, header...)
+    // entry2 before 1 because that is the order expected once they are sorted
+    indexBytes = append(indexBytes, entry2...)
+    indexBytes = append(indexBytes, entry1...)
+    indexBytes = append(indexBytes, ext...)
+    hash := sha1.Sum(indexBytes)
+    indexBytes = append(indexBytes, hash[:]...)
+
+    index, err := ParseIndex(bytes.NewReader(indexBytes))
+    if err != nil {
+        t.Fatalf("Unexpected error when parsing index: \n%s", err.Error())
+    }
+    if exists, _ := index.EntryExists("README.md"); !exists {
+        t.Errorf("Expected 'README.md' to exist")
+    }
+    if exists, _ := index.EntryExists("sample entry"); !exists {
+        t.Errorf("Expected 'sample entry' to exist")
+    }
+    if exists, _ := index.EntryExists("bad entry"); exists {
+        t.Errorf("Did not expect 'bad entry' to exist")
+    }
+
+}
+
+func TestIndexDelete(t *testing.T) {
+    header := make([]byte, 0, 12)
+    // Header signature
+    header = append(header, defaultSignature[0])
+    header = append(header, defaultSignature[1])
+    header = append(header, defaultSignature[2])
+    header = append(header, defaultSignature[3])
+    // Header version number, version number 3
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x3)
+    // Number of index entries, 2
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x0)
+    header = append(header, 0x2)
+    // COMPLETE HEADER
+    sampleHash := sha1.Sum(header)
+    // Entry where most values are 0
+    entry1, err := EntryBytes([2]int32{0, 1}, // ctime
+                         [2]int32{0, 1}, //mtime
+                         0, // dev
+                         0, // ino
+                         0, // mode
+                         0, // uid
+                         0, // gid
+                         0, // fileSize
+                         sampleHash, // hash
+                         "sample entry")
+    if err != nil {
+        t.Fatalf("Unexpected error when creating first entry:\n%s", err.Error())
+    }
+    // Adding padding bytes
+    if len(entry1) % 8 != 0 {
+        entry1 = append(entry1, make([]byte, 8 - (len(entry1) % 8))...)
+    }
+    // Entry2 will be somewhat representative of a real entry and hold either
+    // random data or data similar to real world values
+    now := time.Now()
+    ctime := [2]int32{int32(now.Second()), int32(now.Nanosecond())}
+    // Random
+    dev := uint32(2130821)
+    // Real-world
+    ino := uint32(402549)
+    modeBytes := make([]byte, 2, 4)
+    // 0x81 = 1000 0001
+    modeBytes = append(modeBytes, 0x81)
+    // 0xa4 = 1010 0100
+    modeBytes = append(modeBytes, 0xa4)
+    // Real-world
+    mode := binary.BigEndian.Uint32(modeBytes)
+    // Random
+    uid := uint32(312415223)
+    gid := uid
+    fileSize := int32(1024)
+    entry2, err := EntryBytes(ctime, // ctime
+                         ctime, //mtime
+                         dev, // dev
+                         ino, // ino
+                         mode, // mode
+                         uid, // uid
+                         gid, // gid
+                         fileSize, // fileSize
+                         sampleHash, // hash
+                         "README.md")
+    if err != nil {
+        t.Fatalf("Unexpected error when creating first entry:\n%s", err.Error())
+    }
+    if len(entry2) % 8 != 0 {
+        entry2 = append(entry2, make([]byte, 8 - (len(entry2) % 8))...)
+
+    }
+    // A simulated extension with garbage data
+    ext := make([]byte, 0, 19)
+    ext = append(ext, "TREE"...)
+    // Append 0000-0000 0000-0000 0000-0000 0000-1011
+    ext = append(ext, 0x0)
+    ext = append(ext, 0x0)
+    ext = append(ext, 0x0)
+    ext = append(ext, 0xb)
+    ext = append(ext, "hello world"...)
+    // Combine all the data into one byte slice
+    indexBytes := make([]byte, 0, len(header) + len(entry1) + len(entry2) + len(ext))
+    indexBytes = append(indexBytes, header...)
+    // entry2 before 1 because that is the order expected once they are sorted
+    indexBytes = append(indexBytes, entry2...)
+    indexBytes = append(indexBytes, entry1...)
+    indexBytes = append(indexBytes, ext...)
+    hash := sha1.Sum(indexBytes)
+    indexBytes = append(indexBytes, hash[:]...)
+
+    index, err := ParseIndex(bytes.NewReader(indexBytes))
+    if err != nil {
+        t.Fatalf("Unexpected error when parsing index: \n%s", err.Error())
+    }
+    exists, pos := index.EntryExists("README.md")
+    if !exists {
+        t.Errorf("Expected 'README.md' to exist")
+    }
+    err = index.DeleteEntry(pos)
+    if err != nil {
+        t.Fatalf("Unexpected when deleting entry: \n%s", err.Error())
+    }
+    if exists, _ := index.EntryExists("README.md"); exists {
+        t.Errorf("Did not expect 'README.md' to exist after deletion")
+    }
+
+}
+    
 func equalSlices (slice1, slice2 []byte) (bool, int) {
     l := len(slice1)
     if l != len(slice2) {

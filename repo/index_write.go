@@ -203,7 +203,17 @@ func (idx *Index) CalculateHash () error {
     // In case there is an error in this process, return it 
     return nil
 }
-// Add an entry to an index struct
+// Check if an entry with the specified name exists
+func (idx *Index) EntryExists (name string) (bool, int) {
+    for i, entries := range idx.Entries {
+        if entries.Name == name {
+            return true, i
+        }
+    }
+    return false, -1
+}
+// Add an entry to an index struct 
+// TODO should check for existing entry first
 func (idx *Index) AddEntry (entry *IndexEntry) error {
     // Increment the entry num
     idx.Header.NumEntry ++
@@ -211,6 +221,27 @@ func (idx *Index) AddEntry (entry *IndexEntry) error {
     idx.SortEntries()
     // Return CalculateHash since it also returns an error
     return idx.CalculateHash()
+}
+// Delete an Entry from the index
+func (idx *Index) DeleteEntry (pos int) error {
+    if pos < 0 || pos >= len(idx.Entries){
+        return errors.New("The position provided for deletion is invalid")
+    }
+    // Costly operation
+    idx.Entries = append(idx.Entries[:pos], idx.Entries[pos+1:]...)
+    return nil
+}
+// Adds an entry to the index struct if it doesn't exist or replaces the existing entry
+// with the provided one if it already there
+func (idx *Index) UpdateEntry (entry *IndexEntry) error {
+    exists, pos := idx.EntryExists(entry.Name)
+    if exists {
+        err := idx.DeleteEntry(pos)
+        if err != nil {
+            return err
+        }
+    }
+    return idx.AddEntry(entry)
 }
 // Sorts the entries in an index based on their Name (i.e. file name) and if they match
 // their staging values, 
@@ -225,6 +256,7 @@ func (idx *Index) SortEntries() {
     })
 
 }
+//TODO Add search entries for quickly finding  an index
 // Write an extension with its data into the index. Determines the size value of stored
 // in the extension header based on the length of data
 func (idx *Index) AddExtension (signature [4]byte, data []byte) error {
