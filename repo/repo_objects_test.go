@@ -42,7 +42,7 @@ func TestSaveObjects (t *testing.T) {
     
     if newHash != blobHash {
         t.Errorf("Expected object read from disk to have the same hash as original" +
-        "object. Object read from disk:\n%s", readBlob.Stringer())
+        "object. Object read from disk:\n%s", readBlob.String())
     }
 }
 
@@ -77,7 +77,7 @@ func TestReadObject (t *testing.T) {
     
     if newHash != blobHash {
         t.Errorf("Expected object read from disk to have the same hash as original" +
-        "object. Object read from disk:\n%s", readBlob.Stringer())
+        "object. Object read from disk:\n%s", readBlob.String())
     }
 }
 // Test that the FindObject functions works on partial hashes and the order in which it
@@ -125,7 +125,7 @@ func TestFindObject (t *testing.T) {
         t.Errorf("Expected returned object hash to be: %s\nGot: %s", blobHash, objSearchHash)
     }
     
-    headsDir := path.Join(repo.gitDir, "refs", "heads")
+    headsDir := path.Join(repo.GitDir, "refs", "heads")
     file, err := os.Create(path.Join(headsDir, "test"))
 
     if err != nil {

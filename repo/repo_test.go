@@ -84,12 +84,12 @@ func TestOpenRepo(t *testing.T) {
         err.Error())
     }
 
-    if repo.gitDir != path.Join(tmpDir, ".git") || len(repo.branches) != 0 || repo.worktree != "random" {
+    if repo.GitDir != path.Join(tmpDir, ".git") || len(repo.Branches) != 0 || repo.Worktree != "random" {
         t.Errorf("Repo object is different from expected.\n" +
         "Expected repoPath: %s, Got: %s\n" +
         "Expected worktree: %s, Got: %s\n" +
-        "Expected no repo branches, Got: %d\n", 
-        tmpDir, repo.gitDir, "random", repo.worktree, len(repo.branches))
+        "Expected no repo.Branches, Got: %d\n", 
+        tmpDir, repo.GitDir, "random", repo.Worktree, len(repo.Branches))
     }
 
 }
@@ -134,16 +134,16 @@ func TestOpenRepoWithBranches(t *testing.T) {
         err.Error())
     }
 
-    if repo.gitDir != path.Join(tmpDir, ".git") || len(repo.branches) != 1 || repo.worktree != tmpDir {
+    if repo.GitDir != path.Join(tmpDir, ".git") || len(repo.Branches) != 1 || repo.Worktree != tmpDir {
         t.Errorf("Repo object is different from expected.\n" +
         "Expected repoPath: %s, Got: %s\n" +
         "Expected worktree: %s, Got: %s\n" +
         "Expected repo branch: 1, Got: %d\n", 
-        tmpDir, repo.gitDir, tmpDir, repo.worktree, len(repo.branches))
+        tmpDir, repo.GitDir, tmpDir, repo.Worktree, len(repo.Branches))
     }
 
-    if repo.branches[0].name != "main" {
-        t.Errorf("Expected branch name to be 'main', Got: %s", repo.branches[0].name)
+    if repo.Branches[0].name != "main" {
+        t.Errorf("Expected branch name to be 'main', Got: %s", repo.Branches[0].name)
     }
 }
 
