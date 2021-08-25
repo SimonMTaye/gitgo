@@ -301,32 +301,3 @@ func EntryBytes (ctime [2]int32,
     return data, nil
  }
 
-
-
-func PrintBits(bits uint16) string {
-    bitString := ""
-    for i := 0; i < 16; i ++ {
-        wantedBit := bits >> (15 - i)
-        wantedBit = wantedBit & 0x1
-        if wantedBit == 1 {
-            bitString += "1"
-        } else {
-            bitString += "0"
-        }
-    }
-    return bitString
-}
-
-func PrintBits32(bits uint32) string {
-    bitString := ""
-    for i := 0; i < 32; i ++ {
-        wantedBit := bits >> (31 - i)
-        wantedBit = wantedBit & 0x1
-        if wantedBit == 1 {
-            bitString += "1"
-        } else {
-            bitString += "0"
-        }
-    }
-    return bitString
-}
