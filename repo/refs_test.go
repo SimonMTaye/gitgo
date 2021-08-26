@@ -4,6 +4,7 @@ import (
     "os"
     "path"
     "testing"
+    "github.com/SimonMTaye/gitgo/objects"
     )
 
 
@@ -187,3 +188,67 @@ func TestSaveTag (t *testing.T) {
     }
 }
 
+func TestDeleteTag (t *testing.T) {
+    tmpDir := t.TempDir()
+    err := CreateRepo(tmpDir, "", "")
+    if err != nil {
+        t.Fatalf("Unexpected error when creating a new repository for testing:\n%s",
+        err.Error())
+    }
+
+    repo, err := OpenRepo(tmpDir)
+    if err != nil {
+        t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
+        err.Error())
+    }
+    blob := &objects.GitBlob{}
+    blob.Deserialize([]byte("temp"))
+    hash := objects.Hash(blob)
+    err = repo.SaveObject(blob)
+    if err != nil {
+        t.Fatalf("Unexpected error when saving temp blob:\n%s", err.Error())
+    }
+
+    err = repo.SaveTag("test", hash)
+    if err != nil {
+        t.Fatalf("Unexpected error when saving tag:\n%s", err.Error())
+    }
+    err = repo.DeleteTag("test")
+    if err != nil {
+        t.Fatalf("Unexpected error when deleting tag:\n%s", err.Error())
+    }
+    tagDir := path.Join(repo.GitDir, "refs", "tags")
+    entries, err := os.ReadDir(tagDir)
+    if err != nil {
+        t.Fatalf("Unexpected error when reading tag dir:\n%s", err.Error())
+    }
+    if exists(entries, "test") {
+        t.Errorf("Expected 'tags/test' to not exist")
+    }
+    tag := &objects.GitTag{}
+    tag.SetObject(blob.Type(), objects.Hash(blob))
+    tagHash := objects.Hash(tag)
+    err = repo.SaveObject(tag)
+    if err != nil {
+        t.Fatalf("Unexpected error when saving tag object:\n%s", err.Error())
+    }
+    err = repo.SaveTag("test2", tagHash)
+    if err != nil {
+        t.Fatalf("Unexpected error when saving tag reference:\n%s", err.Error())
+    }
+    err = repo.DeleteTag("test2")
+    if err != nil {
+        t.Fatalf("Unexpected error when deleting tag object:\n%s", err.Error())
+    }
+    entries, err = os.ReadDir(tagDir)
+    if err != nil {
+        t.Fatalf("Unexpected error when reading tag dir:\n%s", err.Error())
+    }
+    if exists(entries, "test2") {
+        t.Errorf("Expected 'tags/test' to not exist")
+    }
+    _, err = repo.GetObject(tagHash)
+    if _, ok := err.(*ErrObjectNotFound); !ok {
+        t.Errorf("Expected ObjectNotFound error when searching for deleted tag object")
+    }
+}

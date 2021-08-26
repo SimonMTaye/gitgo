@@ -5,6 +5,7 @@ import (
     "os"
     "strings"
     "path"
+    "github.com/SimonMTaye/gitgo/objects"
     )
 
 
@@ -87,20 +88,20 @@ func recursiveFindFiles(root string, subpath string) ([]string, error) {
 }
 // Find a ref in a repo. Simply calls the readRef function defined in refs.go
 func (repo *Repo) FindRef(refPath string) (string, error) {
-    return readRef(repo.gitDir, refPath)
+    return readRef(repo.GitDir, refPath)
 }
 
 // Return a map off all refs and what they point to as a key-value pair, respectively. 
 // Calls findAllRefs defined in refs.go
 func (repo *Repo) GetAllRefs() (map[string]string, error) {
-    return findAllRefs(repo.gitDir)
+    return findAllRefs(repo.GitDir)
 }
 
 // Saves a tag with the given 'name' that points the object of the corresponding hash
 // This function does not verify that the hash is valid, that is the caller's responsibility
 // An error is thrown if the tag already exists
 func (repo *Repo) SaveTag(name string, hash string) error {
-    tagsDir := path.Join(repo.gitDir, "refs", "tags")
+    tagsDir := path.Join(repo.GitDir, "refs", "tags")
     // Check that the tag doesn't already exist
     entries, err := os.ReadDir(tagsDir)
     if err != nil {
@@ -116,4 +117,35 @@ func (repo *Repo) SaveTag(name string, hash string) error {
     _, err = file.WriteString(hash)
     defer file.Close()
     return err
+}
+// Deletes a tag from the list of tags.
+// If the tag points to a tag object, delete that too
+func (repo *Repo) DeleteTag(name string) error {
+    tagsDir := path.Join(repo.GitDir, "refs", "tags")
+    entries, err := os.ReadDir(tagsDir)
+    if err != nil {
+        return err
+    }
+    if exists(entries, name) {
+        tagPath := path.Join(tagsDir, name)
+        contents, err := os.ReadFile(tagPath)
+        if err != nil {
+            return err
+        }
+        obj, err := repo.GetObject(string(contents))
+        if err != nil {
+            return err
+        }
+        // If the tag reference points to a tag object, delete the object too
+        if obj.Type() == objects.Tag {
+            err = repo.DeleteObject(objects.Hash(obj))
+            if err != nil {
+                return err
+            }
+        }
+        return os.Remove(tagPath)
+    } else {
+        // Tag doesn't exist
+        return &ErrObjectNotFound{query: name}
+    }
 }
