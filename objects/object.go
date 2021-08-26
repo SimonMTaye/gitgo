@@ -107,7 +107,7 @@ func parseHeader(header []byte) (GitObjectType, int, error) {
     var objType GitObjectType
     spacePos := 0
 
-    if string(header[0:2]) == "tag" {
+    if string(header[0:3]) == "tag" {
         spacePos = 3
         objType = Tag
     } else if string(header[0:4]) == "blob" {
