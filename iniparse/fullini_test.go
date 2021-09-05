@@ -150,5 +150,4 @@ func TestIniToString (t *testing.T) {
     }
 
 }
-
-
+// TODO Test ini merge

@@ -75,3 +75,32 @@ func EqualInis(ini1 *IniFile, ini2 *IniFile) bool {
     }
     return true
 }
+// Merge two ini, into one.
+// For properties in both inis, the option in ini2 will be selected
+func MergeInis(ini1 *IniFile, ini2 *IniFile) *IniFile {
+    newIni := &IniFile{}
+    // Duplicate all the sections in ini1
+    for section, sectionMap := range *ini1 {
+        newSection := Section{}
+        for k, v := range sectionMap {
+            newSection[k] = v
+        }
+        (*newIni)[section] = newSection
+    }
+    // Duplicate stuff in ini2.
+    // Will replace stuff in ini1
+    // If section already exists, replace any old properties with new ones while keeping
+    // the rest
+    // If it doesn't exist, create it
+    for section, sectionMap := range *ini1 {
+        selectedSection, ok := (*newIni)[section]
+        if !ok {
+            selectedSection = Section{}
+        }
+        for k, v := range sectionMap {
+            selectedSection[k] = v
+        }
+        (*newIni)[section] = selectedSection
+    }
+    return newIni
+}
