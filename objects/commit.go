@@ -14,7 +14,7 @@ import (
 //author [Name] [email] [time-stamp] [time-zone] (person who wrote the code)
 //committer (same format as author)\n\n (person who is committing the code)
 //PGP signature (not implemented for now)
-//Commit msg + \n
+//Commit Msg + \n
 
 // time-zone format: [+/-][0000]
 // where 0000 indicates offset from UTC; +/- indicates postive/negative difference
@@ -22,11 +22,11 @@ import (
 
 // A commit object
 type GitCommit struct {
-    treeHash string
-    parentHash string
+    TreeHash string
+    ParentHash string
     author *commitIdentity
     committer *commitIdentity
-    msg string
+    Msg string
 }
 // Struct that indentifies a committer or author of a commit and when that commit was made
 type commitIdentity struct {
@@ -178,7 +178,7 @@ func (commit *GitCommit) Size() string {
 // Process a commit string (stored in a commit file) and sets and object field based on
 // the data
 func (commit *GitCommit) Deserialize(src []byte) {
-    commit.msg = ""
+    commit.Msg = ""
     lines := strings.Split(string(src), "\n")
     // Loop through all the lines of the commit string
     for _, line := range lines {
@@ -187,9 +187,9 @@ func (commit *GitCommit) Deserialize(src []byte) {
         // The first word determines what information the line holds, process accordingly
         switch (words[0]) {
         case "tree" : 
-            commit.treeHash = words[1]
+            commit.TreeHash = words[1]
         case "parent":
-            commit.parentHash = words[1]
+            commit.ParentHash = words[1]
         case "author": 
             author, err := idFromString(strings.Join(words[1:], " "))
             if err != nil {
@@ -203,12 +203,12 @@ func (commit *GitCommit) Deserialize(src []byte) {
             }
             commit.committer = committer
         default:
-            commit.msg += strings.Join(words, " ") + "\n"
+            commit.Msg += strings.Join(words, " ") + "\n"
         }
     }
-    // Remove the Extra new line that will be added on the commit msg because of how its
+    // Remove the Extra new line that will be added on the commit Msg because of how its
     // parsed
-    commit.msg = strings.Trim(commit.msg, "\n")
+    commit.Msg = strings.Trim(commit.Msg, "\n")
 }
 
 // Convert commit struct into a []byte (which is really just a string) ready for writing
@@ -216,7 +216,7 @@ func (commit *GitCommit) Deserialize(src []byte) {
 func (commit *GitCommit) Serialize() []byte {
     bytes := make([]byte, 0 , commit.computeSize())
     bytes = append(bytes, "tree "...)
-    bytes = append(bytes, commit.treeHash...)
+    bytes = append(bytes, commit.TreeHash...)
     bytes = append(bytes, '\n')
 
     if commit.author != nil {
@@ -232,7 +232,7 @@ func (commit *GitCommit) Serialize() []byte {
     }
 
     bytes = append(bytes, '\n')
-    bytes = append(bytes, commit.msg...)
+    bytes = append(bytes, commit.Msg...)
     // TODO It looks like a new line is added to the final git commit object
     // Check if this is because of pretty pretty printing (unlikely because the size
     // also reflects this)
@@ -249,14 +249,14 @@ func (commit *GitCommit) String() string {
 // and returns the size
 func (commit *GitCommit) computeSize() int {
     size := 0
-    if commit.treeHash != "" {
+    if commit.TreeHash != "" {
         //(len("tree") = 4) + space + \n = 6
-        size += 6 + len(commit.treeHash)
+        size += 6 + len(commit.TreeHash)
     }
 
-    if commit.parentHash != "" {
+    if commit.ParentHash != "" {
         //(len("parent") = 6) + space + \n =  8
-        size += 8 + len(commit.parentHash)
+        size += 8 + len(commit.ParentHash)
     }
 
     if commit.author != nil { 
@@ -269,7 +269,7 @@ func (commit *GitCommit) computeSize() int {
     }
     // +2 is for the blank \n character before the commit message
     // and the \n inserted after the commit message
-    size += len(commit.msg) + 2
+    size += len(commit.Msg) + 2
     return size
 
 }

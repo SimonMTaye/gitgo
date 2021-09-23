@@ -17,18 +17,8 @@ type Config struct {
     Local   *iniparse.IniFile
     All     *iniparse.IniFile
 }
-// Read the config files used by git
-// Will throw an error if there was a problem parsing any of the config files
-// Will NOT throw an error if any of the files are not found (expect the localfile; panic on localfile not being present)
-func LoadConfig(localpath string) (*Config, error) {
-    localfile, err := os.Open(localpath)
-    if err != nil {
-        return nil, err
-    }
-    localIni, err := iniparse.ParseIni(localfile)
-    if err != nil {
-        return nil, err
-    }
+// Loads the config data not inlcuding data for the local repository
+func LoadGlobalConfig() (*Config, error) {
     systemIni, err := findAndRead(SYSTEM_PATH)
     if err != nil {
         return nil, err
@@ -38,11 +28,30 @@ func LoadConfig(localpath string) (*Config, error) {
         return nil, err
     }
 
-    return &Config{System: systemIni, 
+    return &Config{
+            System: systemIni, 
             Global: globalIni, 
-            Local: &localIni, 
-            All: iniparse.MergeInis(iniparse.MergeInis(systemIni, globalIni), &localIni)},
+            Local: &iniparse.IniFile{},
+            All: iniparse.MergeInis(systemIni, globalIni)},
         nil
+}
+// Read the config files used by git
+func LoadConfig(localpath string) (*Config, error) {
+    localfile, err := os.Open(localpath)
+    if err != nil {
+        return nil, err
+    }
+    localIni, err := iniparse.ParseIni(localfile)
+    if err != nil {
+        return nil, err
+    }
+    gConfig, err := LoadGlobalConfig()
+    if err != nil {
+        return nil, err
+    }
+    gConfig.Local = &localIni
+    gConfig.All = iniparse.MergeInis(iniparse.MergeInis(gConfig.Global, gConfig.Local), &localIni)
+    return gConfig, nil
 }
 // Reduce duplication in LoadConfig.
 // Finds a path and parses it as an ini file. If the path is not found, no error will
@@ -66,6 +75,6 @@ func findAndRead(path string) (*iniparse.IniFile, error) {
         }
         return &ini, nil
     } else {
-        return nil, nil
+        return &iniparse.IniFile{}, nil
     }
 }

@@ -14,12 +14,13 @@ type Repo struct {
     GitDir string
     Worktree string
     Branches []Branch
+    detached bool
 }
 
 type Branch struct {
     name string
+    ref string
 }
-
 // Indicates that the given directory does not contain a repository
 type ErrNoRepository struct {
     dir string
@@ -104,9 +105,12 @@ func FindRepo (cwd string) (string, error) {
 // Else, return an empty slice when there are no branches (this is current behavior)
 func getBranchesFromConfigIni (configIni *iniparse.IniFile) ([]Branch, error) {
     branches := make([]Branch, 0)
-    for sections := range *configIni {
-        if strings.HasPrefix(sections, "branch") {
-            branches = append(branches, Branch {name: strings.Trim(strings.Split(sections, " ")[1], "\"")})
+    for section := range *configIni {
+        if strings.HasPrefix(section, "branch") {
+            // branch names are stored as 'branch [name]' in config file, this code removes
+            // that
+            // ref to hash is stored in the merge property of the branch section
+            branches = append(branches, Branch {name: strings.Trim(strings.Split(section, " ")[1], "\""), ref: "ref: " + (*configIni)[section]["merge"]})
         }
     }
     return branches, nil
@@ -145,3 +149,22 @@ func (repo *Repo) WriteIndex(index *Index) error {
     }
     return nil
 }
+// Updates the current branch to point to the new hash. If there is no branch (i.e. HEAD
+// is detached) then HEAD will now point to the new hash.
+func (repo *Repo) UpdateCurrentBranch(hash string)  error {
+    headPath := path.Join(repo.GitDir, "HEAD")
+    data, err := os.ReadFile(headPath)
+    if err != nil {
+        return err
+    }
+    contents := string(data)
+    if isRef(contents) {
+        return repo.updateBranchRef(hash) 
+
+    } else {
+        return os.WriteFile(headPath, []byte(hash), NORMAL_FILEMODE)
+    }
+
+}
+
+

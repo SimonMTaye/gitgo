@@ -3,6 +3,7 @@ package repo
 import (
     "os"
     "github.com/SimonMTaye/gitgo/iniparse"
+    "github.com/SimonMTaye/gitgo/config"
     "path/filepath"
 )
 
@@ -12,7 +13,10 @@ const EMPTY_DESCRIPTION = "Unnamed repository; edit this file 'description' to n
 //Represents 001 - 111 - 111 - 111
 //Or:          d - rwx - rwx - rwx
 const DIR_FILEMODE = 1023
-
+//Represents 000 - 110 - 110 - 100
+//Or:          d - rwx - rwx - rwx
+const NORMAL_FILEMODE = 436
+const DEFAULT_BRANCH_NAME = "main"
 
 // Create the ".git" directory and the necessary files and dirs
 // Will throw and error if ".git" already exists
@@ -54,13 +58,7 @@ func CreateRepo(cwd string, description string, worktree string) error {
     if err != nil {
         return err
     }
-
-    head_file, err := os.Create(filepath.Join(gitDir, "HEAD"))
-    defer head_file.Close()
-    if err != nil {
-        return err
-    }
-
+    // Create config file
     config_file, err := os.Create(filepath.Join(gitDir, "config"))
     defer config_file.Close()
     if err != nil {
@@ -70,7 +68,31 @@ func CreateRepo(cwd string, description string, worktree string) error {
     if err != nil {
         return err
     }
-
+    // Get default branch name; use hard coded value if not available
+    configData, err := config.LoadGlobalConfig()
+    if err != nil {
+        return err
+    }
+    initBranchName := DEFAULT_BRANCH_NAME
+    initSection, ok := (*configData.All)["init"]
+    if ok {
+        branchName, ok := initSection["defaultBranch"]
+        if ok {
+            initBranchName = branchName
+        }
+    }
+    // Create main branch ref
+    _, err = os.Create(filepath.Join(refsDir, "heads", initBranchName))
+    if err != nil {
+        return err
+    }
+    head_file, err := os.Create(filepath.Join(gitDir, "HEAD"))
+    // Set new branch as head
+    head_file.WriteString("ref: refs/heads/" + initBranchName + "\n")
+    defer head_file.Close()
+    if err != nil {
+        return err
+    }
     description_file, err := os.Create(filepath.Join(gitDir, "description"))
     defer description_file.Close()
     if err != nil {

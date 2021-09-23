@@ -12,8 +12,8 @@ func TestCommit (t *testing.T) {
     commit := &GitCommit{}
     commit.SetAuthorAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
     commit.SetCommitterAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
-    commit.treeHash = "a6fea408f7673f5ef6fa1d8561ee7bc06fd69d3a"
-    commit.msg =    "Initial commit\n\n" +
+    commit.TreeHash = "a6fea408f7673f5ef6fa1d8561ee7bc06fd69d3a"
+    commit.Msg =    "Initial commit\n\n" +
                     "Created package to parse .ini files and some tests.\n" +
                     "Created basic README"
     expectedHash :=   "0a7dc15c18075d667bcf5baebbf8787c73484bc8"
@@ -36,8 +36,8 @@ func TestCommitDeseralizing (t *testing.T) {
     commit := &GitCommit{}
     commit.SetAuthorAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
     commit.SetCommitterAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
-    commit.treeHash = "a6fea408f7673f5ef6fa1d8561ee7bc06fd69d3a"
-    commit.msg =    "Initial commit\n\n" +
+    commit.TreeHash = "a6fea408f7673f5ef6fa1d8561ee7bc06fd69d3a"
+    commit.Msg =    "Initial commit\n\n" +
                     "Created package to parse .ini files and some tests.\n" +
                     "Created basic README"
     expectedHash :=   "0a7dc15c18075d667bcf5baebbf8787c73484bc8"

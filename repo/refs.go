@@ -44,7 +44,7 @@ func isRef(unknown string) bool {
 
 // Find all the refs in a repo and the hashes of what they are pointing to
 func findAllRefs (gitDir string) (map[string]string, error) {
-    refs, err := recursiveFindFiles(gitDir, ".")
+    refs, err := recursiveFindFiles(gitDir, "refs")
     if err != nil {
         return nil, err
     }
@@ -52,6 +52,7 @@ func findAllRefs (gitDir string) (map[string]string, error) {
     for _, refPath := range refs {
         ref, err := readRef(gitDir, refPath)
         if err != nil {
+            return nil, err
             refMap[refPath] = "Error reading ref"
         } else {
             refMap[refPath] = ref
@@ -148,4 +149,9 @@ func (repo *Repo) DeleteTag(name string) error {
         // Tag doesn't exist
         return &ErrObjectNotFound{query: name}
     }
+}
+// Update a branch ref to a new hash
+func (repo *Repo) updateBranchRef(branch string) error {
+    branchRef := path.Join(repo.GitDir, "refs", "heads", "branch")
+    return os.WriteFile(branchRef, []byte(branch), NORMAL_FILEMODE)
 }

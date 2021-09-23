@@ -2,6 +2,7 @@ package objects
 
 import (
     "fmt"
+    "os"
     )
 
 type GitBlob struct {
@@ -11,6 +12,17 @@ type GitBlob struct {
 
 func NewBlob(size int) *GitBlob {
     return &GitBlob{size:size}
+}
+
+func FileBlob(path string) (*GitBlob, error) {
+    contents, err := os.ReadFile(path)
+    if err != nil {
+        return nil, err
+    }
+    blob := &GitBlob{}
+    blob.Deserialize(contents)
+    return blob, nil
+
 }
 
 // Simply returns the data of the blob

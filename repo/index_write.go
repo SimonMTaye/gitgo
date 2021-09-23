@@ -270,3 +270,5 @@ func (idx *Index) AddExtension (signature [4]byte, data []byte) error {
     // Return error incase there is an error somewhere
     return nil
 }
+
+
