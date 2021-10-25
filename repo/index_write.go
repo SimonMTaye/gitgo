@@ -82,7 +82,7 @@ func (idx *IndexEntry) ToBytes() []byte {
 	if len(data)%8 != 0 {
 		fillerNum := 8 - (len(data) % 8)
 		// This assumes that the zero value for a byte is 0
-		nulls := make([]byte, fillerNum, fillerNum)
+		nulls := make([]byte, fillerNum)
 		data = append(data, nulls...)
 	}
 	return data
@@ -141,7 +141,7 @@ func (ext *Extension) ToBytes() []byte {
 
 // Convert a header into a byte slice
 func (hdr *IndexHeader) ToBytes() []byte {
-	bytes := make([]byte, 12, 12)
+	bytes := make([]byte, 12)
 	n := copy(bytes, hdr.Signature[:4])
 	if n != 4 {
 		panic("Bytes were not copied correctly")
@@ -155,7 +155,7 @@ func (hdr *IndexHeader) ToBytes() []byte {
 
 // Covert an Index struct into a byte slice
 func (idx *Index) bytesWithoutHash() []byte {
-	bytes := make([]byte, 0, 0)
+	bytes := make([]byte, 0)
 	bytes = append(bytes, idx.Header.ToBytes()...)
 	// Add entries
 	for _, entry := range idx.Entries {
@@ -209,7 +209,7 @@ func (idx *Index) AddEntry(entry *IndexEntry) error {
 // Delete an Entry from the index
 func (idx *Index) DeleteEntry(pos int) error {
 	if pos < 0 || pos >= len(idx.Entries) {
-		return errors.New("The position provided for deletion is invalid")
+		return errors.New("the position provided for deletion is invalid")
 	}
 	// Costly operation
 	idx.Entries = append(idx.Entries[:pos], idx.Entries[pos+1:]...)

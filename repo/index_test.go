@@ -1,12 +1,12 @@
 package repo
 
 import (
-    "testing"
-    "bytes"
-    "encoding/binary"
-    "crypto/sha1"
-    "time"
-    )
+	"bytes"
+	"crypto/sha1"
+	"encoding/binary"
+	"testing"
+	"time"
+)
 
 // V3 Flag parsing/reading NOT tested
 // Test that bits from a num are correctly read as '0' or '1'
@@ -227,6 +227,7 @@ func TestIndexRead (t *testing.T) {
     }
 }
 
+// Test that file names can be indentified in an index file
 func TestIndexExists (t *testing.T) {
     header := make([]byte, 0, 12)
     // Header signature
