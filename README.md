@@ -43,6 +43,9 @@ Most plumbing functionality is now compelete. This project will not focus on hav
 - Complex git configs (each repo has a config file; only the required information, such as branches, will be parsed. Other data that may impact how git works will be ignored.
 - Index file extensions
 
+#### Other Things to Keep in Mind
+- When built for Windows, the index file might not function as expected when adding new entries. This is because the index file uses Inode, Device, Guid and Uuid numbers that do not exist (as far as I know) in Windows. Linux is unaffected
+
 
  ["Git from the Bottom Up"](https://jwiegley.github.io/git-from-the-bottom-up/) by John Wiegley was also immensely useful
 
