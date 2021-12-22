@@ -89,6 +89,9 @@ func recursiveFindFiles(root string, subpath string) ([]string, error) {
 
 // Find a ref in a repo. Simply calls the readRef function defined in refs.go
 func (repo *Repo) FindRef(refPath string) (string, error) {
+	if isRef(refPath) {
+		return readRef(repo.GitDir, strings.TrimPrefix(refPath, "ref: "))
+	}
 	return readRef(repo.GitDir, refPath)
 }
 
@@ -153,7 +156,7 @@ func (repo *Repo) DeleteTag(name string) error {
 }
 
 // Update a branch ref to a new hash
-func (repo *Repo) updateBranchRef(branch string) error {
-	branchRef := path.Join(repo.GitDir, "refs", "heads", "branch")
-	return os.WriteFile(branchRef, []byte(branch), NORMAL_FILEMODE)
+func (repo *Repo) updateBranchRef(branch string, hash string) error {
+	branchRef := path.Join(repo.GitDir, "refs", "heads", branch)
+	return os.WriteFile(branchRef, []byte(hash), NORMAL_FILEMODE)
 }

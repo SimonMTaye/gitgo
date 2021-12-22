@@ -178,8 +178,8 @@ func (idx *Index) ToBytes() []byte {
 
 // Sets the indexs hash field based on the data it contains
 func (idx *Index) CalculateHash() error {
-	bytes := idx.bytesWithoutHash()
-	hash := sha1.Sum(bytes)
+	dataInBytes := idx.bytesWithoutHash()
+	hash := sha1.Sum(dataInBytes)
 	idx.Hash = hash[:]
 	// In case there is an error in this process, return it
 	return nil
@@ -256,4 +256,27 @@ func (idx *Index) AddExtension(signature [4]byte, data []byte) error {
 	idx.Extensions = append(idx.Extensions, ext)
 	// Return error incase there is an error somewhere
 	return nil
+}
+
+func (idx *Index) IsEmpty() bool {
+	return idx.Header.NumEntry == 0
+}
+
+// Create an empty index. Used for repositories where the staging file is not present
+func EmptyIndex() *Index {
+	index := &Index{
+		Header: &IndexHeader{
+			Signature: defaultSignature,
+			Version:   2,
+			NumEntry:  0,
+		},
+		Entries:    make([]*IndexEntry, 0),
+		Extensions: make([]*Extension, 0),
+		Hash:       make([]byte, 20),
+	}
+	err := index.CalculateHash()
+	if err != nil {
+		return nil
+	}
+	return index
 }

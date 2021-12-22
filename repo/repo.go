@@ -127,10 +127,14 @@ func exists(entries []os.DirEntry, name string) bool {
 	return false
 }
 
-// Parse the index file of repo and return a struct representing the staging area
+// Parse the index file of repo and return a struct representing the staging area. If the index doesn't already, create a new one
 func (repo *Repo) Index() (*Index, error) {
 	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
 	if err != nil {
+		perr, ok := err.(*os.PathError)
+		if ok && perr.Err == os.ErrNotExist {
+			return EmptyIndex(), nil
+		}
 		return nil, err
 	}
 	return ParseIndex(indexFile)
@@ -163,7 +167,11 @@ func (repo *Repo) UpdateCurrentBranch(hash string) error {
 	}
 	contents := string(data)
 	if isRef(contents) {
-		return repo.updateBranchRef(hash)
+		// If the HEAD is a branch, then update the branch
+		// ref: refs/heads/ has a length of 16
+		branchName := contents[16:]
+		branchName = strings.Trim(branchName, " \n")
+		return repo.updateBranchRef(branchName, hash)
 
 	} else {
 		return os.WriteFile(headPath, []byte(hash), NORMAL_FILEMODE)

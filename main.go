@@ -313,6 +313,18 @@ var commitCommand = cli.NewCommand("commit", "record changes to the repository")
 			fmt.Println(err)
 			return 1
 		}
+		_, err = repoStruct.Index()
+		if err != nil {
+			// If there's a path error, then its likely the index doesn't exist yet and nothing has been added to the directory
+			_, ok := err.(*os.PathError)
+			if ok {
+				fmt.Println("Nothing to commit")
+				return 1
+			}
+			fmt.Println(err)
+			return 1
+		}
+
 		err = repoStruct.Commit(args[0])
 		if err != nil {
 			fmt.Println(err)
@@ -351,18 +363,16 @@ var logCommand = cli.NewCommand("log", "Show commit logs").
 			startObj = "HEAD"
 		}
 
-		var distance int
+		distance := 5
 		if len(args) == 1 {
 			distance, err = strconv.Atoi(args[0])
-		} else {
-			distance = 5
-		}
-		for i := 0; i < distance; i++ {
-			var curHash string
-			if i == 0 {
-				curHash = startObj
-
+			if err != nil {
+				fmt.Println(err)
+				return 1
 			}
+		}
+		curHash := startObj
+		for i := 0; i < distance; i++ {
 			hash, err := repoStruct.FindObject(curHash)
 			if err != nil {
 				fmt.Println(err)
@@ -380,6 +390,9 @@ var logCommand = cli.NewCommand("log", "Show commit logs").
 			}
 			fmt.Println(commit)
 			curHash = commit.ParentHash
+			if len(curHash) == 0 {
+				break
+			}
 		}
 		return 0
 	})
@@ -415,17 +428,18 @@ var rmCommand = cli.NewCommand("rm", "Remove files from the index").
 		return 0
 	})
 
-func main() {
-	app := cli.New("small subset of git commands").
-		WithCommand(add).
-		WithCommand(catFile).
-		WithCommand(rmCommand).
-		WithCommand(logCommand).
-		WithCommand(initCommand).
-		WithCommand(commitCommand).
-		WithCommand(showRefCommand).
-		WithCommand(lsFilesCommand).
-		WithCommand(hashObjectCommand)
-	os.Exit(app.Run(os.Args, os.Stdout))
+var App = cli.New("small subset of git commands").
+	WithCommand(add).
+	WithCommand(catFile).
+	WithCommand(rmCommand).
+	WithCommand(logCommand).
+	WithCommand(tagCommand).
+	WithCommand(initCommand).
+	WithCommand(commitCommand).
+	WithCommand(showRefCommand).
+	WithCommand(lsFilesCommand).
+	WithCommand(hashObjectCommand)
 
+func main() {
+	os.Exit(App.Run(os.Args, os.Stdout))
 }
