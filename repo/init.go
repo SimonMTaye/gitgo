@@ -15,7 +15,7 @@ const EMPTY_DESCRIPTION = "Unnamed repository; edit this file 'description' to n
 //Or:          d - rwx - rwx - rwx
 const DIR_FILEMODE = 1023
 
-//Represents 000 - 110 - 110 - 100
+// NORMAL_FILEMODE Represents 000 - 110 - 110 - 100
 //Or:          d - rwx - rwx - rwx
 const NORMAL_FILEMODE = 436
 const DEFAULT_BRANCH_NAME = "main"
