@@ -7,7 +7,7 @@ import (
 	"path"
 )
 
-// Helper functions for the cli
+// AddHelper Helper functions for the cli
 // Add a file to the index as an index entry
 func AddHelper(repodir string, filepath string) error {
 	repoStruct, err := repo.OpenRepo(repodir)
@@ -43,7 +43,7 @@ func AddHelper(repodir string, filepath string) error {
 	return nil
 }
 
-// Find an object based on a search string
+// CatfileHelper Find an object based on a search string
 func CatfileHelper(repodir string, srchstr string) (objects.GitObject, error) {
 	repoStruct, err := repo.OpenRepo(repodir)
 	if err != nil {
@@ -60,36 +60,11 @@ func CatfileHelper(repodir string, srchstr string) (objects.GitObject, error) {
 	return obj, nil
 }
 
-// Create a commit based on the contents of the index and previous commit
-func CommitHelper(repodir string) (*objects.GitCommit, error) {
-	/* repoStruct, err := repo.OpenRepo(repodir)
-	   if err != nil {
-	       return nil, err
-	   } */
-	return nil, nil
-}
+// CommitHelper Create a commit based on the contents of the index and previous commit
 
-// Parse an object and return it for printing
-func ParseObjectHelper(filepath string, objType objects.GitObjectType) (objects.GitObject, error) {
-	// Read the content of the file, return the error if this files
-	data, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, err
-	}
-	switch objType {
-	case objects.Blob:
-		{
-			blob := &objects.GitBlob{}
-			blob.Deserialize(data)
-			return blob, nil
-		}
-	default:
-		return objects.Deserialize(data)
-	}
+// ParseObjectHelper Parse an object and return it for printing
 
-}
-
-// Shortcut for finding and openeing a repo
+// FindandOpenRepo Shortcut for finding and openeing a repo
 func FindandOpenRepo() (*repo.Repo, error) {
 	cwd, err := os.Getwd()
 	if err != nil {

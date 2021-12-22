@@ -90,8 +90,8 @@ func TestCreateRepoWithDefaultParams(t *testing.T) {
 		t.Errorf("Unexpected error when reading 'description' file:\n%s", err.Error())
 	}
 
-	if string(descriptionContents) != EMPTY_DESCRIPTION {
-		t.Errorf("'description' file\nExpected:\n%s\nGot:\n%s", EMPTY_DESCRIPTION,
+	if string(descriptionContents) != EmptyDescription {
+		t.Errorf("'description' file\nExpected:\n%s\nGot:\n%s", EmptyDescription,
 			string(descriptionContents))
 	}
 

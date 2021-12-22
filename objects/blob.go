@@ -1,51 +1,52 @@
 package objects
 
 import (
-    "fmt"
-    "os"
-    )
+	"fmt"
+	"os"
+)
 
 type GitBlob struct {
-    size int
-    data []byte
+	size int
+	data []byte
 }
 
 func NewBlob(size int) *GitBlob {
-    return &GitBlob{size:size}
+	return &GitBlob{size: size}
 }
 
 func FileBlob(path string) (*GitBlob, error) {
-    contents, err := os.ReadFile(path)
-    if err != nil {
-        return nil, err
-    }
-    blob := &GitBlob{}
-    blob.Deserialize(contents)
-    return blob, nil
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	blob := &GitBlob{}
+	blob.Deserialize(contents)
+	return blob, nil
 
 }
 
-// Simply returns the data of the blob
+// Serialize Simply returns the data of the blob
 func (obj *GitBlob) Serialize() []byte {
-    return obj.data
+	return obj.data
 }
 
 // Returns the blob's content
-func (blob *GitBlob) String() string {
-    return string(blob.data)
+func (obj *GitBlob) String() string {
+	return string(obj.data)
 }
 
-// Sets the data field of the GitBlob struct
+// Deserialize Sets the data field of the GitBlob struct
 func (obj *GitBlob) Deserialize(src []byte) {
-    obj.data = src
-    obj.size = len(src)
+	obj.data = src
+	obj.size = len(src)
 }
 
-// Returns 'blob'
-func (obj *GitBlob) Type() GitObjectType{
-    return Blob
+// Type Returns 'blob'
+func (obj *GitBlob) Type() GitObjectType {
+	return Blob
 }
-// Returns an ASCII representation of the size of the blob
+
+// Size Returns an ASCII representation of the size of the blob
 func (obj *GitBlob) Size() string {
-    return fmt.Sprint(obj.size)
+	return fmt.Sprint(obj.size)
 }

@@ -21,7 +21,7 @@ type treeMap struct {
 	files    []*treeEntry
 }
 
-// TODO TreeMap generation needs to be tested
+// AddEntry TODO TreeMap generation needs to be tested
 // Add an entry to the treeMap
 func (tm *treeMap) AddEntry(entry *IndexEntry) {
 	mode := parseFileModeBits(entry.Metadata.FileMode)
@@ -57,7 +57,7 @@ func (tm *treeMap) ToTree() *objects.GitTree {
 	return tree
 }
 
-// Creates all the GitTree objects that represent the root dir as well as all the subdirs
+// AllTrees Creates all the GitTree objects that represent the root dir as well as all the subdirs
 // Necessary for saving them to Disk
 func (tm *treeMap) AllTrees() []*objects.GitTree {
 	// Returns the tree object form of the subtree and every sub tree
@@ -119,7 +119,7 @@ func (repo *Repo) Commit(msg string) error {
 		return err
 	}
 	if idx.IsEmpty() {
-		return errors.New("Index is empty, there is nothing to commit")
+		return errors.New("index is empty, there is nothing to commit")
 	}
 	treeMap := IndexToTreeMap(idx)
 	trees := treeMap.AllTrees()
@@ -130,7 +130,7 @@ func (repo *Repo) Commit(msg string) error {
 			return err
 		}
 	}
-	config, err := config.LoadConfig(repo.GitDir)
+	configs, err := config.LoadConfig(repo.GitDir)
 	if err != nil {
 		return err
 	}
@@ -138,8 +138,8 @@ func (repo *Repo) Commit(msg string) error {
 	if err != nil {
 		return err
 	}
-	user := (*config.All)["user"]["name"]
-	email := (*config.All)["user"]["email"]
+	user := (*configs.All)["user"]["name"]
+	email := (*configs.All)["user"]["email"]
 	commit := &objects.GitCommit{}
 	// Create commit object
 	// Root tree should be at the beginning, needs to be checked

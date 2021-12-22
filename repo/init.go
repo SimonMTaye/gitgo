@@ -8,19 +8,19 @@ import (
 	"github.com/SimonMTaye/gitgo/iniparse"
 )
 
-const EMPTY_DESCRIPTION = "Unnamed repository; edit this file 'description' to name the repository."
+const EmptyDescription = "Unnamed repository; edit this file 'description' to name the repository."
 
-//Unix permission bits
+// DirFilemode Unix permission bits
 //Represents 001 - 111 - 111 - 111
 //Or:          d - rwx - rwx - rwx
-const DIR_FILEMODE = 1023
+const DirFilemode = 1023
 
-// NORMAL_FILEMODE Represents 000 - 110 - 110 - 100
+// NormalFilemode Represents 000 - 110 - 110 - 100
 //Or:          d - rwx - rwx - rwx
-const NORMAL_FILEMODE = 436
-const DEFAULT_BRANCH_NAME = "main"
+const NormalFilemode = 436
+const DefaultBranchName = "main"
 
-// Create the ".git" directory and the necessary files and dirs
+// CreateRepo Create the ".git" directory and the necessary files and dirs
 // Will throw and error if ".git" already exists
 // cwd: Current working directory where ".git" folder will be created
 // description: repo description
@@ -30,44 +30,44 @@ func CreateRepo(cwd string, description string, worktree string) error {
 	if err != nil {
 		return nil
 	}
-	err = os.Mkdir(gitDir, DIR_FILEMODE)
+	err = os.Mkdir(gitDir, DirFilemode)
 	if err != nil {
 		return err
 	}
 
-	err = os.Mkdir(filepath.Join(gitDir, "objects"), DIR_FILEMODE)
+	err = os.Mkdir(filepath.Join(gitDir, "objects"), DirFilemode)
 	if err != nil {
 		return err
 	}
 
-	err = os.Mkdir(filepath.Join(gitDir, "branches"), DIR_FILEMODE)
+	err = os.Mkdir(filepath.Join(gitDir, "branches"), DirFilemode)
 	if err != nil {
 		return err
 	}
 
 	refsDir := filepath.Join(gitDir, "refs")
-	err = os.Mkdir(refsDir, DIR_FILEMODE)
+	err = os.Mkdir(refsDir, DirFilemode)
 	if err != nil {
 		return err
 	}
 
-	err = os.Mkdir(filepath.Join(refsDir, "tags"), DIR_FILEMODE)
+	err = os.Mkdir(filepath.Join(refsDir, "tags"), DirFilemode)
 	if err != nil {
 		return err
 	}
 
-	err = os.Mkdir(filepath.Join(refsDir, "heads"), DIR_FILEMODE)
+	err = os.Mkdir(filepath.Join(refsDir, "heads"), DirFilemode)
 	if err != nil {
 		return err
 	}
 	// Create config file
-	config_file, err := os.Create(filepath.Join(gitDir, "config"))
+	configFile, err := os.Create(filepath.Join(gitDir, "config"))
 	if err != nil {
 		return err
 	}
-	defer config_file.Close()
+	defer configFile.Close()
 
-	_, err = config_file.Write([]byte(defaultConfig(worktree)))
+	_, err = configFile.Write([]byte(defaultConfig(worktree)))
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func CreateRepo(cwd string, description string, worktree string) error {
 	if err != nil {
 		return err
 	}
-	initBranchName := DEFAULT_BRANCH_NAME
+	initBranchName := DefaultBranchName
 	initSection, ok := (*configData.All)["init"]
 	if ok {
 		branchName, ok := initSection["defaultBranch"]
@@ -89,23 +89,23 @@ func CreateRepo(cwd string, description string, worktree string) error {
 	if err != nil {
 		return err
 	}
-	head_file, err := os.Create(filepath.Join(gitDir, "HEAD"))
+	headFile, err := os.Create(filepath.Join(gitDir, "HEAD"))
 	// Set new branch as head
-	head_file.WriteString("ref: refs/heads/" + initBranchName + "\n")
-	defer head_file.Close()
+	headFile.WriteString("ref: refs/heads/" + initBranchName + "\n")
+	defer headFile.Close()
 	if err != nil {
 		return err
 	}
-	description_file, err := os.Create(filepath.Join(gitDir, "description"))
+	descriptionFile, err := os.Create(filepath.Join(gitDir, "description"))
 	if err != nil {
 		return err
 	}
-	defer description_file.Close()
+	defer descriptionFile.Close()
 
 	if description != "" {
-		_, err = description_file.Write([]byte(description))
+		_, err = descriptionFile.Write([]byte(description))
 	} else {
-		_, err = description_file.Write([]byte(EMPTY_DESCRIPTION))
+		_, err = descriptionFile.Write([]byte(EmptyDescription))
 	}
 
 	return err
@@ -113,12 +113,12 @@ func CreateRepo(cwd string, description string, worktree string) error {
 
 //Returns a string representation of the default config file used for .git directories
 func defaultConfig(worktree string) string {
-	config := make(iniparse.IniFile)
-	config.SetProperty("core", "repositoryformatversion", "0")
-	config.SetProperty("core", "filemode", "false")
-	config.SetProperty("core", "bare", "false")
+	configIni := make(iniparse.IniFile)
+	configIni.SetProperty("core", "repositoryformatversion", "0")
+	configIni.SetProperty("core", "filemode", "false")
+	configIni.SetProperty("core", "bare", "false")
 	if worktree != ".." && worktree != "" {
-		config.SetProperty("core", "worktree", worktree)
+		configIni.SetProperty("core", "worktree", worktree)
 	}
-	return config.String()
+	return configIni.String()
 }

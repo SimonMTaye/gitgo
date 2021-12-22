@@ -1,4 +1,4 @@
-// Functions for finding and saving objects to a repo
+// Package repo Functions for finding and saving objects to a repo
 package repo
 
 import (
@@ -16,7 +16,7 @@ func (e *ErrObjectNotFound) Error() string {
 	return e.query + " is not a valid object name\n"
 }
 
-// Resolves name to a object hash-id
+// FindObject Resolves name to a object hash-id
 // Functions works in this order:
 //     Check branch heads
 //     Look for tags
@@ -85,7 +85,7 @@ func (repo *Repo) FindObject(name string) (string, error) {
 	return matches[0], nil
 }
 
-// Return a GitObject from a valid hash
+// GetObject Return a GitObject from a valid hash
 // returns an error if the object is not found
 func (repo *Repo) GetObject(objectHash string) (objects.GitObject, error) {
 	dir := path.Join(repo.GitDir, "objects", objectHash[:2])
@@ -105,13 +105,13 @@ func (repo *Repo) GetObject(objectHash string) (objects.GitObject, error) {
 	return nil, &ErrObjectNotFound{query: objectHash}
 }
 
-// Delete an object from the database
+// DeleteObject Delete an object from the database
 func (repo *Repo) DeleteObject(hash string) error {
 	objPath := path.Join(repo.GitDir, "objects", hash[:2], hash[2:])
 	return os.Remove(objPath)
 }
 
-// Save a git object to the repo
+// SaveObject Save a git object to the repo
 func (repo *Repo) SaveObject(obj objects.GitObject) error {
 	hash := objects.Hash(obj)
 	// Check if the dir with the first two letters of the hash exists
@@ -125,7 +125,7 @@ func (repo *Repo) SaveObject(obj objects.GitObject) error {
 	hashDir := path.Join(objectsDir, hash[:2])
 	// If the dir where the object will be stored doesn't exist, create it
 	if !exists(entries, hash[:2]) {
-		err = os.Mkdir(hashDir, DIR_FILEMODE)
+		err = os.Mkdir(hashDir, DirFilemode)
 		if err != nil {
 			return err
 		}

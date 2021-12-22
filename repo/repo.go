@@ -1,4 +1,4 @@
-// Functions for finding and opening a repo and creating a repo struct
+// Package repo Functions for finding and opening a repo and creating a repo struct
 package repo
 
 import (
@@ -22,12 +22,12 @@ type Branch struct {
 	ref  string
 }
 
-// Indicates that the given directory does not contain a repository
+// ErrNoRepository Indicates that the given directory does not contain a repository
 type ErrNoRepository struct {
 	dir string
 }
 
-// Indicates that a repository could not be found in the current dir or any of its parents
+// ErrNoRepositoryFound Indicates that a repository could not be found in the current dir or any of its parents
 type ErrNoRepositoryFound struct {
 	dir string
 }
@@ -40,7 +40,7 @@ func (e *ErrNoRepositoryFound) Error() string {
 	return "Could not find repository in the directory or its parents: " + e.dir
 }
 
-// Checks the current directory for a ".git" directory, returns an error if it is not found
+// OpenRepo Checks the current directory for a ".git" directory, returns an error if it is not found
 // Reads the "config" file in the ".git" directory and returns a Repo struct with the
 // current repos properties
 func OpenRepo(dir string) (*Repo, error) {
@@ -83,7 +83,7 @@ func OpenRepo(dir string) (*Repo, error) {
 
 }
 
-// Recursively checks parent directory until a ".git" is found or "/" is reached
+// FindRepo Recursively checks parent directory until a ".git" is found or "/" is reached
 func FindRepo(cwd string) (string, error) {
 	curDir := cwd
 	for curDir != "/" {
@@ -127,7 +127,7 @@ func exists(entries []os.DirEntry, name string) bool {
 	return false
 }
 
-// Parse the index file of repo and return a struct representing the staging area. If the index doesn't already, create a new one
+// Index Parse the index file of repo and return a struct representing the staging area. If the index doesn't already, create a new one
 func (repo *Repo) Index() (*Index, error) {
 	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
 	if err != nil {
@@ -140,7 +140,7 @@ func (repo *Repo) Index() (*Index, error) {
 	return ParseIndex(indexFile)
 }
 
-// Write an Index struct to the index file of the repo
+// WriteIndex Write an Index struct to the index file of the repo
 func (repo *Repo) WriteIndex(index *Index) error {
 	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
 	if err != nil {
@@ -157,7 +157,7 @@ func (repo *Repo) WriteIndex(index *Index) error {
 	return nil
 }
 
-// Updates the current branch to point to the new hash. If there is no branch (i.e. HEAD
+// UpdateCurrentBranch Updates the current branch to point to the new hash. If there is no branch (i.e. HEAD
 // is detached) then HEAD will now point to the new hash.
 func (repo *Repo) UpdateCurrentBranch(hash string) error {
 	headPath := path.Join(repo.GitDir, "HEAD")
@@ -174,7 +174,7 @@ func (repo *Repo) UpdateCurrentBranch(hash string) error {
 		return repo.updateBranchRef(branchName, hash)
 
 	} else {
-		return os.WriteFile(headPath, []byte(hash), NORMAL_FILEMODE)
+		return os.WriteFile(headPath, []byte(hash), NormalFilemode)
 	}
 
 }

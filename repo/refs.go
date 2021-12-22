@@ -1,4 +1,4 @@
-// Functions for finding and resolving refs in a repo
+// Package repo Functions for finding and resolving refs in a repo
 package repo
 
 import (
@@ -87,7 +87,7 @@ func recursiveFindFiles(root string, subpath string) ([]string, error) {
 	return files, nil
 }
 
-// Find a ref in a repo. Simply calls the readRef function defined in refs.go
+// FindRef Find a ref in a repo. Simply calls the readRef function defined in refs.go
 func (repo *Repo) FindRef(refPath string) (string, error) {
 	if isRef(refPath) {
 		return readRef(repo.GitDir, strings.TrimPrefix(refPath, "ref: "))
@@ -95,13 +95,13 @@ func (repo *Repo) FindRef(refPath string) (string, error) {
 	return readRef(repo.GitDir, refPath)
 }
 
-// Return a map off all refs and what they point to as a key-value pair, respectively.
+// GetAllRefs Return a map off all refs and what they point to as a key-value pair, respectively.
 // Calls findAllRefs defined in refs.go
 func (repo *Repo) GetAllRefs() (map[string]string, error) {
 	return findAllRefs(repo.GitDir)
 }
 
-// Saves a tag with the given 'name' that points the object of the corresponding hash
+// SaveTag Saves a tag with the given 'name' that points the object of the corresponding hash
 // This function does not verify that the hash is valid, that is the caller's responsibility
 // An error is thrown if the tag already exists
 func (repo *Repo) SaveTag(name string, hash string) error {
@@ -158,5 +158,5 @@ func (repo *Repo) DeleteTag(name string) error {
 // Update a branch ref to a new hash
 func (repo *Repo) updateBranchRef(branch string, hash string) error {
 	branchRef := path.Join(repo.GitDir, "refs", "heads", branch)
-	return os.WriteFile(branchRef, []byte(hash), NORMAL_FILEMODE)
+	return os.WriteFile(branchRef, []byte(hash), NormalFilemode)
 }

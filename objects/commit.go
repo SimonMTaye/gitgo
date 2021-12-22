@@ -168,19 +168,19 @@ func (id *commitIdentity) String() string {
 	return id.name + " <" + id.email + "> " + fmt.Sprint(id.time) + " " + id.timezone.String()
 }
 
-// Returns the size of the commitIdentity in string format
+// Size Returns the size of the commitIdentity in string format
 // implementation is a bit wasteful
 // optimize
 func (id *commitIdentity) Size() int {
 	return len(id.String())
 }
 
-// Return 'commit'
+// Type Return 'commit'
 func (commit *GitCommit) Type() GitObjectType {
 	return Commit
 }
 
-// Return size of commit data in bytes
+// Size Return size of commit data in bytes
 func (commit *GitCommit) Size() string {
 	return fmt.Sprint(commit.computeSize())
 }
@@ -221,7 +221,7 @@ func (commit *GitCommit) Deserialize(src []byte) {
 	commit.Msg = strings.Trim(commit.Msg, "\n")
 }
 
-// Convert commit struct into a []byte (which is really just a string) ready for writing
+// Serialize Convert commit struct into a []byte (which is really just a string) ready for writing
 // to a file
 func (commit *GitCommit) Serialize() []byte {
 	bytes := make([]byte, 0, commit.computeSize())
@@ -294,8 +294,8 @@ func (commit *GitCommit) computeSize() int {
 // the system time and timezone will be used for those fields
 func (commit *GitCommit) SetAuthor(name string, email string) {
 	time := time.Now()
-	_, tz_offset := time.Zone()
-	tOffset, err := fromOffset(tz_offset)
+	_, tzOffset := time.Zone()
+	tOffset, err := fromOffset(tzOffset)
 	if err != nil {
 		panic(err)
 	}
@@ -310,8 +310,8 @@ func (commit *GitCommit) SetAuthor(name string, email string) {
 // the system time and timezone will be used for those fields
 func (commit *GitCommit) SetCommitter(name string, email string) {
 	time := time.Now()
-	_, tz_offset := time.Zone()
-	tOffset, err := fromOffset(tz_offset)
+	_, tzOffset := time.Zone()
+	tOffset, err := fromOffset(tzOffset)
 	if err != nil {
 		panic(err)
 	}
@@ -327,8 +327,8 @@ func (commit *GitCommit) SetCommitter(name string, email string) {
 func (commit *GitCommit) SetAuthorAndTime(name string,
 	email string,
 	timeInUnix int64,
-	tz_offset int) error {
-	tOffset, err := fromOffset(tz_offset)
+	tzOffset int) error {
+	tOffset, err := fromOffset(tzOffset)
 	if err != nil {
 		return err
 	}
@@ -345,8 +345,8 @@ func (commit *GitCommit) SetAuthorAndTime(name string,
 func (commit *GitCommit) SetCommitterAndTime(name string,
 	email string,
 	timeInUnix int64,
-	tz_offset int) error {
-	tOffset, err := fromOffset(tz_offset)
+	tzOffset int) error {
+	tOffset, err := fromOffset(tzOffset)
 	if err != nil {
 		return err
 	}

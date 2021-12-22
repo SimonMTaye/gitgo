@@ -1,4 +1,5 @@
 //go:build windows
+// +build windows
 
 package repo
 
@@ -10,7 +11,7 @@ import (
 	"syscall"
 )
 
-// Read a file path and create an entry
+// CreateEntry Read a file path and create an entry
 func CreateEntry(repoPath string, filePath string) (*IndexEntry, error) {
 	fileInfo, err := os.Stat(path.Join(repoPath, filePath))
 	if err != nil {

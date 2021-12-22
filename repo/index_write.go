@@ -55,7 +55,7 @@ func parseFileMode(statMode uint32) uint32 {
 	return statMode
 }
 
-// Use the binary package to covert the metadata directly to bytes as no processing
+// ToBytes Use the binary package to covert the metadata directly to bytes as no processing
 // needs to be done
 func (idxMdt *indexEntryMetadata) ToBytes() []byte {
 	buf := &bytes.Buffer{}
@@ -66,7 +66,7 @@ func (idxMdt *indexEntryMetadata) ToBytes() []byte {
 	return buf.Bytes()
 }
 
-// Convert an IndexEntry into bytes
+// ToBytes Convert an IndexEntry into bytes
 func (idx *IndexEntry) ToBytes() []byte {
 	data := idx.Metadata.ToBytes()
 	data = append(data, idx.Name...)
@@ -88,7 +88,7 @@ func (idx *IndexEntry) ToBytes() []byte {
 	return data
 }
 
-// Conveinience function for getting the hash of an object
+// Hash Conveinience function for getting the hash of an object
 func (idx *IndexEntry) Hash() []byte {
 	return idx.Metadata.ObjHash[:]
 }
@@ -122,7 +122,7 @@ func (idx *IndexEntry) Stringer() string {
 	return fmt.Sprintf("%s %s %d\t%s", modeString, hashString, idx.Stage(), idx.Name)
 }
 
-// Convert an Extension's metadata into a byte slice
+// ToBytes Convert an Extension's metadata into a byte slice
 func (extMeta *ExtensionMetadata) ToBytes() []byte {
 	buf := &bytes.Buffer{}
 	err := binary.Write(buf, binary.BigEndian, extMeta)
@@ -132,45 +132,45 @@ func (extMeta *ExtensionMetadata) ToBytes() []byte {
 	return buf.Bytes()
 }
 
-// Convert an extension into a byte slice
+// ToBytes Convert an extension into a byte slice
 func (ext *Extension) ToBytes() []byte {
 	data := ext.Metadata.ToBytes()
 	data = append(data, ext.Data...)
 	return data
 }
 
-// Convert a header into a byte slice
+// ToBytes Convert a header into a byte slice
 func (hdr *IndexHeader) ToBytes() []byte {
-	bytes := make([]byte, 12)
-	n := copy(bytes, hdr.Signature[:4])
+	dataInBytes := make([]byte, 12)
+	n := copy(dataInBytes, hdr.Signature[:4])
 	if n != 4 {
 		panic("Bytes were not copied correctly")
 	}
 	// Write the version into the byte slice
-	binary.BigEndian.PutUint32(bytes[4:8], uint32(hdr.Version))
+	binary.BigEndian.PutUint32(dataInBytes[4:8], uint32(hdr.Version))
 	// Write the name into the byte slice
-	binary.BigEndian.PutUint32(bytes[8:12], uint32(hdr.NumEntry))
-	return bytes
+	binary.BigEndian.PutUint32(dataInBytes[8:12], uint32(hdr.NumEntry))
+	return dataInBytes
 }
 
 // Covert an Index struct into a byte slice
 func (idx *Index) bytesWithoutHash() []byte {
-	bytes := make([]byte, 0)
-	bytes = append(bytes, idx.Header.ToBytes()...)
+	dataInBytes := make([]byte, 0)
+	dataInBytes = append(dataInBytes, idx.Header.ToBytes()...)
 	// Add entries
 	for _, entry := range idx.Entries {
 		entryBytes := entry.ToBytes()
-		bytes = append(bytes, entryBytes...)
+		dataInBytes = append(dataInBytes, entryBytes...)
 
 	}
 	// Add extensions
 	for _, ext := range idx.Extensions {
-		bytes = append(bytes, ext.ToBytes()...)
+		dataInBytes = append(dataInBytes, ext.ToBytes()...)
 	}
-	return bytes
+	return dataInBytes
 }
 
-// Adds the hash to the []byte returned by bytesWithoutHash. Functions are separated
+// ToBytes Adds the hash to the []byte returned by bytesWithoutHash. Functions are separated
 // for use when computing the hash it self
 func (idx *Index) ToBytes() []byte {
 	return append(idx.bytesWithoutHash(), idx.Hash...)
@@ -195,7 +195,7 @@ func (idx *Index) EntryExists(name string) (bool, int) {
 	return false, -1
 }
 
-// Add an entry to an index struct
+// AddEntry Add an entry to an index struct
 // TODO should check for existing entry first
 func (idx *Index) AddEntry(entry *IndexEntry) error {
 	// Increment the entry num
@@ -249,7 +249,7 @@ func (idx *Index) SortEntries() {
 func (idx *Index) AddExtension(signature [4]byte, data []byte) error {
 	extHeader := &ExtensionMetadata{Signature: signature, Size: int32(len(data))}
 	if int(extHeader.Size) < len(data) {
-		return errors.New("Extension has too much data")
+		return errors.New("extension has too much data")
 
 	}
 	ext := &Extension{Metadata: extHeader, Data: data}
@@ -264,12 +264,9 @@ func (idx *Index) IsEmpty() bool {
 
 // Create an empty index. Used for repositories where the staging file is not present
 func EmptyIndex() *Index {
+	header := CreateIndexHeader(2, 0)
 	index := &Index{
-		Header: &IndexHeader{
-			Signature: defaultSignature,
-			Version:   2,
-			NumEntry:  0,
-		},
+		Header:     &header,
 		Entries:    make([]*IndexEntry, 0),
 		Extensions: make([]*Extension, 0),
 		Hash:       make([]byte, 20),

@@ -28,13 +28,13 @@ type IndexHeader struct {
 var defaultSignature = [4]byte{'D', 'I', 'R', 'C'}
 
 // Check if an index has expected signature bytes
-func (indexhd *IndexHeader) ValidSignature() bool {
-	return indexhd.Signature == defaultSignature
+func (hdr *IndexHeader) ValidSignature() bool {
+	return hdr.Signature == defaultSignature
 }
 
 // Returns the version num as an int
-func (indexhd *IndexHeader) VersionNum() int {
-	return int(indexhd.Version)
+func (hdr *IndexHeader) VersionNum() int {
+	return int(hdr.Version)
 }
 
 // Check if a certain bit in a 16 bit is a 0 or a 1. 'true' means 1 and 'false' means 0
@@ -71,19 +71,19 @@ func bitSet32(bits uint32, pos int) bool {
 // uint16 is used instead of [2]byte for easy bitwise operations
 type entryFlags uint16
 
-// Check if the 'extended' flag is set
+// Extended Check if the 'extended' flag is set
 func (eF *entryFlags) Extended() bool {
 	return bitSet(uint16(*eF), 1)
 }
 
-// Return the length of name. A value of 4095 (the max for 12 bits) means the name may be
+// NameLength Return the length of name. A value of 4095 (the max for 12 bits) means the name may be
 // greater. Currently, these names will be unsupported by the program
 func (eF *entryFlags) NameLength() int {
 	// Set the first four bits of the flag to zero and return the remaining number
 	return int(*eF & 0xfff)
 }
 
-// Returns the contents of the stage bits (an int with a value of 0-3)
+// Stage Returns the contents of the stage bits (an int with a value of 0-3)
 // These bits are used for resolving merge conflicts
 // 0 -  Normal (no conflicts)
 // 1 -  Base (Ancestor)
@@ -98,19 +98,19 @@ func (eF *entryFlags) Stage() int {
 	return int(wantedBits)
 }
 
-// Alias for flag.Extended()
-func (idxEntry *IndexEntry) Extended() bool {
-	return idxEntry.Metadata.Flags.Extended()
+// Extended Alias for flag.Extended()
+func (idx *IndexEntry) Extended() bool {
+	return idx.Metadata.Flags.Extended()
 }
 
-// Alias for flag.NameLength()
-func (idxEntry *IndexEntry) NameLength() int {
-	return idxEntry.Metadata.Flags.NameLength()
+// NameLength Alias for flag.NameLength()
+func (idx *IndexEntry) NameLength() int {
+	return idx.Metadata.Flags.NameLength()
 }
 
-// Alias for flag.Stage()
-func (idxEntry *IndexEntry) Stage() int {
-	return idxEntry.Metadata.Flags.Stage()
+// Stage Alias for flag.Stage()
+func (idx *IndexEntry) Stage() int {
+	return idx.Metadata.Flags.Stage()
 }
 
 type version3Flags uint16
