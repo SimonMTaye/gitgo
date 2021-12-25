@@ -4,6 +4,7 @@ import (
 	"compress/zlib"
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"strconv"
 )
@@ -18,18 +19,26 @@ func (e *ErrBadObject) Error() string {
 
 // GitObject Interface for all Git objects
 type GitObject interface {
+	ByteDeserializable
+	ByteSerialized
+	fmt.Stringer
 	// Type A string of the object type; using a custom type for clarity
 	Type() GitObjectType
 	// Size An ASCII representation of the size of the object
 	Size() string
-	// Deserialize Parse a bunch of bytes into meaningful data
+}
+
+type ByteSerialized interface {
+	// Serialize Convert object data into bytes
 	// Header should NOT be part of the bytes
+	Serialize() []byte
+}
+
+type ByteDeserializable interface {
+	ByteSerialized
+	// Deserialize Parse a bunch of bytes into meaningful data
 	// Function will return an error if the object is incorrectly formatted
 	Deserialize(data []byte)
-	// Serialize Convert object data into bytes
-	Serialize() []byte
-	//String form of object. Most objects can simply use their serialize functions
-	String() string
 }
 
 // GitObjectType Denote the object type
@@ -53,8 +62,7 @@ func CompressAndSave(dst io.Writer, obj GitObject) error {
 	return zWriter.Close()
 }
 
-// TODO test
-// Decompress contents in src and parse the resulting data as an object
+// DecompressAndRead decompress contents in src and parse the resulting data as an object
 func DecompressAndRead(src io.Reader) (GitObject, error) {
 	zReader, err := zlib.NewReader(src)
 	defer zReader.Close()
@@ -67,12 +75,11 @@ func DecompressAndRead(src io.Reader) (GitObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Deserialize(data)
+	return ObjectFromBytes(data)
 }
 
-// Deserialize TODO test
-// Read a bunch of bytes and return the correct object
-func Deserialize(src []byte) (GitObject, error) {
+// ObjectFromBytes read a bunch of bytes and return the correct object
+func ObjectFromBytes(src []byte) (GitObject, error) {
 	nulPos := 0
 	// Increment nulPos until it is the index of the null byte at the end of the header
 	l := len(src)
@@ -141,7 +148,7 @@ func Hash(obj GitObject) string {
 	return hex.EncodeToString(hashBytes[:])
 }
 
-// A git header for the object
+// Header A git header for the object
 // A header should be in the format:
 // Object Type + Space (0x20) + Object Size + Null Byte (0x00)
 func Header(obj GitObject) []byte {
