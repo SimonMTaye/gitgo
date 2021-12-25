@@ -6,7 +6,7 @@ import (
 )
 
 // Uses info from an actual git Tree object for test
-// tests AddEntry, Serialize, Size and that the byte layout is correct
+// tests addEntry, Serialize, Size and that the byte layout is correct
 func TestTree(t *testing.T) {
 	tree := &GitTree{}
 	tree.AddEntry(Normal, "fullini_test.go", "cc09a49865b0f9a62039b7155a20f9f29af312b4")

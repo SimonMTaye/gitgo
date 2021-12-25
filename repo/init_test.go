@@ -17,7 +17,7 @@ func TestDefaultConfig(t *testing.T) {
 
 	defaultIni, err := iniparse.ParseIni(strings.NewReader(defaultConfig("")))
 	if err != nil {
-		t.Errorf("Unexpected error when parsing ini:\n%s", err.Error())
+		t.Errorf("Unexpected Error when parsing ini:\n%s", err.Error())
 	}
 	if !iniparse.EqualInis(&expectedIni, &defaultIni) {
 		t.Errorf("Generated config is different from expected\nExpected:\n%s\nGot:\n%s",
@@ -27,7 +27,7 @@ func TestDefaultConfig(t *testing.T) {
 	expectedIni.SetProperty("core", "worktree", "random")
 	defaultIni, err = iniparse.ParseIni(strings.NewReader(defaultConfig("random")))
 	if err != nil {
-		t.Errorf("Unexpected error when parsing ini:\n%s", err.Error())
+		t.Errorf("Unexpected Error when parsing ini:\n%s", err.Error())
 	}
 	if !iniparse.EqualInis(&expectedIni, &defaultIni) {
 		t.Errorf("Generated config is different from expected\nExpected:\n%s\nGot:\n%s",
@@ -40,7 +40,7 @@ func TestCreateRepoWithDefaultParams(t *testing.T) {
 
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Errorf("CreateRepo returned unexpected error:\n%s", err.Error())
+		t.Errorf("CreateRepo returned unexpected Error:\n%s", err.Error())
 	}
 
 	dirs, err := os.ReadDir(tmpDir)
@@ -49,7 +49,7 @@ func TestCreateRepoWithDefaultParams(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Errorf("Unexpected error when reading temp directory:\n%s", err.Error())
+		t.Errorf("Unexpected Error when reading temp directory:\n%s", err.Error())
 	}
 
 	gitDir := path.Join(tmpDir, ".git")
@@ -87,7 +87,7 @@ func TestCreateRepoWithDefaultParams(t *testing.T) {
 	}
 	descriptionContents, err := os.ReadFile(path.Join(gitDir, "description"))
 	if err != nil {
-		t.Errorf("Unexpected error when reading 'description' file:\n%s", err.Error())
+		t.Errorf("Unexpected Error when reading 'description' file:\n%s", err.Error())
 	}
 
 	if string(descriptionContents) != EmptyDescription {
@@ -100,16 +100,16 @@ func TestCreateRepoWithDefaultParams(t *testing.T) {
 	}
 	configContents, err := os.ReadFile(path.Join(gitDir, "config"))
 	if err != nil {
-		t.Errorf("Unexpected error when reading 'config' file:\n%s", err.Error())
+		t.Errorf("Unexpected Error when reading 'config' file:\n%s", err.Error())
 	}
 	configIni, err := iniparse.ParseIni(strings.NewReader(string(configContents)))
 	if err != nil {
-		t.Errorf("Unexpected error when parsing 'config' file as ini:\n%s", err.Error())
+		t.Errorf("Unexpected Error when parsing 'config' file as ini:\n%s", err.Error())
 	}
 
 	expectedIni, err := iniparse.ParseIni(strings.NewReader(defaultConfig("")))
 	if err != nil {
-		t.Errorf("Unexpected error when parsing default config as ini:\n%s", err.Error())
+		t.Errorf("Unexpected Error when parsing default config as ini:\n%s", err.Error())
 	}
 
 	if !iniparse.EqualInis(&configIni, &expectedIni) {
@@ -126,20 +126,20 @@ func TestCreateRepoWorktreeAndDescription(t *testing.T) {
 	sampleConfig := defaultConfig(worktreeDir)
 	err := CreateRepo(tmpDir, sampleDescription, worktreeDir)
 	if err != nil {
-		t.Errorf("CreateRepo returned unexpected error:\n%s", err.Error())
+		t.Errorf("CreateRepo returned unexpected Error:\n%s", err.Error())
 	}
 	configContents, err := os.ReadFile(path.Join(tmpDir, ".git", "config"))
 	if err != nil {
-		t.Errorf("Unexpected error when reading 'config' file:\n%s", err.Error())
+		t.Errorf("Unexpected Error when reading 'config' file:\n%s", err.Error())
 	}
 	configIni, err := iniparse.ParseIni(strings.NewReader(string(configContents)))
 	if err != nil {
-		t.Errorf("Unexpected error when parsing 'config' file as ini:\n%s", err.Error())
+		t.Errorf("Unexpected Error when parsing 'config' file as ini:\n%s", err.Error())
 	}
 
 	expectedIni, err := iniparse.ParseIni(strings.NewReader(sampleConfig))
 	if err != nil {
-		t.Errorf("Unexpected error when parsing sample string as ini:\n%s", err.Error())
+		t.Errorf("Unexpected Error when parsing sample string as ini:\n%s", err.Error())
 	}
 
 	if !iniparse.EqualInis(&configIni, &expectedIni) {

@@ -40,7 +40,7 @@ func (e *ErrNoRepositoryFound) Error() string {
 	return "Could not find repository in the directory or its parents: " + e.dir
 }
 
-// OpenRepo Checks the current directory for a ".git" directory, returns an error if it is not found
+// OpenRepo Checks the current directory for a ".git" directory, returns an Error if it is not found
 // Reads the "config" file in the ".git" directory and returns a Repo struct with the
 // current repos properties
 func OpenRepo(dir string) (*Repo, error) {
@@ -102,7 +102,7 @@ func FindRepo(cwd string) (string, error) {
 }
 
 // Read Branch information from the config file
-// INFO if atleast one  branch is a necessity, then this function should return an error
+// INFO if atleast one  branch is a necessity, then this function should return an Error
 // Else, return an empty slice when there are no branches (this is current behavior)
 func getBranchesFromConfigIni(configIni *iniparse.IniFile) ([]Branch, error) {
 	branches := make([]Branch, 0)
@@ -146,7 +146,7 @@ func (repo *Repo) WriteIndex(index *Index) error {
 	if err != nil {
 		return err
 	}
-	indexBytes := index.ToBytes()
+	indexBytes := index.Serialize()
 	n, err := indexFile.Write(indexBytes)
 	if err != nil {
 		return err

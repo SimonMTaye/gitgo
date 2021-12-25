@@ -86,7 +86,7 @@ func (repo *Repo) FindObject(name string) (string, error) {
 }
 
 // GetObject Return a GitObject from a valid hash
-// returns an error if the object is not found
+// returns an Error if the object is not found
 func (repo *Repo) GetObject(objectHash string) (objects.GitObject, error) {
 	dir := path.Join(repo.GitDir, "objects", objectHash[:2])
 	objs, err := os.ReadDir(dir)

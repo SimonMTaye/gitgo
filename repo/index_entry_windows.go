@@ -19,7 +19,7 @@ func CreateEntry(repoPath string, filePath string) (*IndexEntry, error) {
 	}
 	stat, ok := fileInfo.Sys().(*syscall.Win32FileAttributeData)
 	if !ok {
-		return nil, errors.New("error getting 'stat' information for file: " +
+		return nil, errors.New("Error getting 'stat' information for file: " +
 			path.Join(repoPath, filePath))
 	}
 	fileBytes, err := os.ReadFile(path.Join(repoPath, filePath))
@@ -37,16 +37,16 @@ func CreateEntry(repoPath string, filePath string) (*IndexEntry, error) {
 		Gid:      uint32(0),
 		FileMode: parseFileMode(uint32(fileInfo.Mode())),
 		FileSize: int32(fileInfo.Size()),
-		Flags:    CreateFlag(false, false, filePath),
+		Flags:    createFlag(false, false, filePath),
 		ObjHash:  hash,
 	}
 	idxEntry := &IndexEntry{Metadata: entryMetdata, Name: filePath, V3Flags: nil}
 	return idxEntry, nil
 }
 
-func ConvertNanosec(nsec int64) TimePair {
+func ConvertNanosec(nsec int64) timePair {
 	// Set whole number values of nsec to Sec and remaining fractional amount to Nsec
 	secs := int32(nsec / 1000000000)
 	nsecs := int32(nsec % 1000000000)
-	return TimePair{Sec: secs, Nsec: nsecs}
+	return timePair{Sec: secs, Nsec: nsecs}
 }

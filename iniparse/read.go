@@ -23,7 +23,7 @@ type ErrBadLine struct {
 
 func (e ErrBadLine) Error() string {
 	slice := make([]string, 2)
-	slice[0] = "Error parsing line"
+	slice[0] = "error parsing line"
 	slice[1] = e.line
 	return strings.Join(slice, "\n")
 }

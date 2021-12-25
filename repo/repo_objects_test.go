@@ -12,11 +12,11 @@ func TestSaveObjects(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating repo:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when creating repo:\n%s", err.Error())
 	}
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when opening repo:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when opening repo:\n%s", err.Error())
 	}
 	blob := &objects.GitBlob{}
 	blob.Deserialize([]byte("hello world"))
@@ -24,17 +24,17 @@ func TestSaveObjects(t *testing.T) {
 
 	err = repo.SaveObject(blob)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving object:\n%s", err.Error())
 	}
 
 	file, err := os.Open(path.Join(tmpDir, ".git", "objects", blobHash[:2], blobHash[2:]))
 	if err != nil {
-		t.Fatalf("Unexpected error when opening object file:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when opening object file:\n%s", err.Error())
 	}
 
 	readBlob, err := objects.DecompressAndRead(file)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading object file:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when reading object file:\n%s", err.Error())
 	}
 
 	newHash := objects.Hash(readBlob)
@@ -52,11 +52,11 @@ func TestReadObject(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating repo:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when creating repo:\n%s", err.Error())
 	}
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when opening repo:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when opening repo:\n%s", err.Error())
 	}
 	blob := &objects.GitBlob{}
 	blob.Deserialize([]byte("hello world"))
@@ -64,12 +64,12 @@ func TestReadObject(t *testing.T) {
 
 	err = repo.SaveObject(blob)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving object:\n%s", err.Error())
 	}
 
 	readBlob, err := repo.GetObject(blobHash)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading object file:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when reading object file:\n%s", err.Error())
 	}
 
 	newHash := objects.Hash(readBlob)
@@ -86,11 +86,11 @@ func TestFindObject(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating repo:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when creating repo:\n%s", err.Error())
 	}
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when opening repo:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when opening repo:\n%s", err.Error())
 	}
 	blob := &objects.GitBlob{}
 	blob.Deserialize([]byte("hello world"))
@@ -98,17 +98,17 @@ func TestFindObject(t *testing.T) {
 
 	err = repo.SaveObject(blob)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving object:\n%s", err.Error())
 	}
 
 	err = repo.SaveTag("test", blobHash)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving tag:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving tag:\n%s", err.Error())
 	}
 	// Check that tags are searched
 	tagSearchHash, err := repo.FindObject("test")
 	if err != nil {
-		t.Fatalf("Unexpected error when searching for tag:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when searching for tag:\n%s", err.Error())
 	}
 
 	if tagSearchHash != blobHash {
@@ -118,7 +118,7 @@ func TestFindObject(t *testing.T) {
 	// Check that objects can be found with the first few letters of the hash
 	objSearchHash, err := repo.FindObject(blobHash[:4])
 	if err != nil {
-		t.Fatalf("Unexpected error when searching for object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when searching for object:\n%s", err.Error())
 	}
 
 	if objSearchHash != blobHash {
@@ -129,19 +129,19 @@ func TestFindObject(t *testing.T) {
 	file, err := os.Create(path.Join(headsDir, "test"))
 
 	if err != nil {
-		t.Fatalf("Unexpected error when creating file 'test' in refs/heads:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when creating file 'test' in refs/heads:\n%s", err.Error())
 	}
 
 	randomString := "hello world"
 	_, err = file.WriteString(randomString)
 	if err != nil {
-		t.Fatalf("Unexpected error when writing to file refs/heads/test:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when writing to file refs/heads/test:\n%s", err.Error())
 	}
 	file.Close()
 
 	headSearch, err := repo.FindObject("test")
 	if err != nil {
-		t.Fatalf("Unexpected error when searching for head object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when searching for head object:\n%s", err.Error())
 	}
 
 	if headSearch != randomString {

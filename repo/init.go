@@ -21,7 +21,7 @@ const NormalFilemode = 436
 const DefaultBranchName = "main"
 
 // CreateRepo Create the ".git" directory and the necessary files and dirs
-// Will throw and error if ".git" already exists
+// Will throw and Error if ".git" already exists
 // cwd: Current working directory where ".git" folder will be created
 // description: repo description
 // worktree: location for worktree

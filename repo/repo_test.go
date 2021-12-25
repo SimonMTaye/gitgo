@@ -28,7 +28,7 @@ func TestFindRepo(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Errorf("Unexpected error returned by FindRepo:\n%s", err.Error())
+		t.Errorf("Unexpected Error returned by FindRepo:\n%s", err.Error())
 	}
 
 	repo2, err := FindRepo(nestedPath)
@@ -38,7 +38,7 @@ func TestFindRepo(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Errorf("Unexpected error returned by FindRepo:\n%s", err.Error())
+		t.Errorf("Unexpected Error returned by FindRepo:\n%s", err.Error())
 	}
 }
 
@@ -59,9 +59,9 @@ func TestFindRepoOnNoRepo(t *testing.T) {
 	_, ok := err.(*ErrNoRepositoryFound)
 	if !ok {
 		if err != nil {
-			t.Errorf("FindRepo returned an unexpected error:\n%s", err.Error())
+			t.Errorf("FindRepo returned an unexpected Error:\n%s", err.Error())
 		} else {
-			t.Errorf("Expected FindRepo to return an error, but nothing was returned")
+			t.Errorf("Expected FindRepo to return an Error, but nothing was returned")
 		}
 
 	}
@@ -71,13 +71,13 @@ func TestOpenRepo(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "random")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating a new repository for testing:\n%s",
+		t.Fatalf("Unexpected Error when creating a new repository for testing:\n%s",
 			err.Error())
 	}
 
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
+		t.Fatalf("Unexpected Error when reading repository info for testing:\n%s",
 			err.Error())
 	}
 
@@ -95,20 +95,20 @@ func TestOpenRepoWithBranches(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating a new repository for testing:\n%s",
+		t.Fatalf("Unexpected Error when creating a new repository for testing:\n%s",
 			err.Error())
 	}
 	// Open config file and modify it
 	configPath := path.Join(tmpDir, ".git", "config")
 	configFile, err := os.Open(configPath)
 	if err != nil {
-		t.Fatalf("Unexpected error when opening repository config file for testing:\n%s",
+		t.Fatalf("Unexpected Error when opening repository config file for testing:\n%s",
 			err.Error())
 	}
 
 	configIni, err := iniparse.ParseIni(configFile)
 	if err != nil {
-		t.Fatalf("Unexpected error when parsing config file for testing:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when parsing config file for testing:\n%s", err.Error())
 	}
 	configFile.Close()
 
@@ -117,7 +117,7 @@ func TestOpenRepoWithBranches(t *testing.T) {
 
 	configFile, err = os.Create(configPath)
 	if err != nil {
-		t.Fatalf("Unexpected error when writing to repository config file for testing:\n%s",
+		t.Fatalf("Unexpected Error when writing to repository config file for testing:\n%s",
 			err.Error())
 	}
 
@@ -126,7 +126,7 @@ func TestOpenRepoWithBranches(t *testing.T) {
 
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
+		t.Fatalf("Unexpected Error when reading repository info for testing:\n%s",
 			err.Error())
 	}
 

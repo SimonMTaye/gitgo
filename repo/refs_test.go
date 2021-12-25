@@ -90,7 +90,7 @@ func TestFindAllRefs(t *testing.T) {
 
 	refMap, err := findAllRefs(gitDir)
 	if err != nil {
-		t.Fatalf("Unexpected error scanning for refs:\n%s", err.Error())
+		t.Fatalf("Unexpected Error scanning for refs:\n%s", err.Error())
 	}
 
 	firstRef, ok := refMap[firstRefPath]
@@ -130,28 +130,28 @@ func TestReadRef(t *testing.T) {
 	}
 	firstRef, err := readRef(tmpDir, firstRefPath)
 	if err != nil {
-		t.Errorf("Unexpected error when reading %s:\n%s", firstRefPath, err.Error())
+		t.Errorf("Unexpected Error when reading %s:\n%s", firstRefPath, err.Error())
 	} else if firstRef != "firstref" {
 		t.Errorf("Expected %s to contain %s. Got: %s", firstRefPath, "firstref", firstRef)
 	}
 
 	secondRef, err := readRef(tmpDir, secondRefPath)
 	if err != nil {
-		t.Errorf("Unexpected error when reading %s:\n%s", secondRefPath, err.Error())
+		t.Errorf("Unexpected Error when reading %s:\n%s", secondRefPath, err.Error())
 	} else if secondRef != "firstref" {
 		t.Errorf("Expected %s to contain %s. Got: %s", secondRefPath, "firstref", secondRef)
 	}
 
 	thirdRef, err := readRef(tmpDir, thirdRefPath)
 	if err != nil {
-		t.Errorf("Unexpected error when reading %s:\n%s", thirdRefPath, err.Error())
+		t.Errorf("Unexpected Error when reading %s:\n%s", thirdRefPath, err.Error())
 	} else if thirdRef != "fourthref" {
 		t.Errorf("Expected %s to contain %s. Got: %s", thirdRefPath, "fourthref", thirdRef)
 	}
 
 	fourthRef, err := readRef(tmpDir, fourthRefPath)
 	if err != nil {
-		t.Errorf("Unexpected error when reading %s:\n%s", fourthRefPath, err.Error())
+		t.Errorf("Unexpected Error when reading %s:\n%s", fourthRefPath, err.Error())
 	} else if thirdRef != "fourthref" {
 		t.Errorf("Expected %s to contain %s. Got: %s", fourthRefPath, "fourthref", fourthRef)
 	}
@@ -161,24 +161,24 @@ func TestSaveTag(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating a new repository for testing:\n%s",
+		t.Fatalf("Unexpected Error when creating a new repository for testing:\n%s",
 			err.Error())
 	}
 
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
+		t.Fatalf("Unexpected Error when reading repository info for testing:\n%s",
 			err.Error())
 	}
 
 	err = repo.SaveTag("test", "hello world")
 	if err != nil {
-		t.Fatalf("Unexpected error when saving tag:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving tag:\n%s", err.Error())
 	}
 
 	tagContent, err := repo.FindObject("test")
 	if err != nil {
-		t.Fatalf("Unexpected error when reading tag:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when reading tag:\n%s", err.Error())
 	}
 
 	if tagContent != "hello world" {
@@ -190,13 +190,13 @@ func TestDeleteTag(t *testing.T) {
 	tmpDir := t.TempDir()
 	err := CreateRepo(tmpDir, "", "")
 	if err != nil {
-		t.Fatalf("Unexpected error when creating a new repository for testing:\n%s",
+		t.Fatalf("Unexpected Error when creating a new repository for testing:\n%s",
 			err.Error())
 	}
 
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading repository info for testing:\n%s",
+		t.Fatalf("Unexpected Error when reading repository info for testing:\n%s",
 			err.Error())
 	}
 	blob := &objects.GitBlob{}
@@ -204,21 +204,21 @@ func TestDeleteTag(t *testing.T) {
 	hash := objects.Hash(blob)
 	err = repo.SaveObject(blob)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving temp blob:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving temp blob:\n%s", err.Error())
 	}
 
 	err = repo.SaveTag("test", hash)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving tag:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving tag:\n%s", err.Error())
 	}
 	err = repo.DeleteTag("test")
 	if err != nil {
-		t.Fatalf("Unexpected error when deleting tag:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when deleting tag:\n%s", err.Error())
 	}
 	tagDir := path.Join(repo.GitDir, "refs", "tags")
 	entries, err := os.ReadDir(tagDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading tag dir:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when reading tag dir:\n%s", err.Error())
 	}
 	if exists(entries, "test") {
 		t.Errorf("Expected 'tags/test' to not exist")
@@ -228,25 +228,25 @@ func TestDeleteTag(t *testing.T) {
 	tagHash := objects.Hash(tag)
 	err = repo.SaveObject(tag)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving tag object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving tag object:\n%s", err.Error())
 	}
 	err = repo.SaveTag("test2", tagHash)
 	if err != nil {
-		t.Fatalf("Unexpected error when saving tag reference:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when saving tag reference:\n%s", err.Error())
 	}
 	err = repo.DeleteTag("test2")
 	if err != nil {
-		t.Fatalf("Unexpected error when deleting tag object:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when deleting tag object:\n%s", err.Error())
 	}
 	entries, err = os.ReadDir(tagDir)
 	if err != nil {
-		t.Fatalf("Unexpected error when reading tag dir:\n%s", err.Error())
+		t.Fatalf("Unexpected Error when reading tag dir:\n%s", err.Error())
 	}
 	if exists(entries, "test2") {
 		t.Errorf("Expected 'tags/test' to not exist")
 	}
 	_, err = repo.GetObject(tagHash)
 	if _, ok := err.(*ErrObjectNotFound); !ok {
-		t.Errorf("Expected ObjectNotFound error when searching for deleted tag object")
+		t.Errorf("Expected ObjectNotFound Error when searching for deleted tag object")
 	}
 }

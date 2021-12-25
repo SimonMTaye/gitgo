@@ -71,12 +71,12 @@ func recursiveFindFiles(root string, subpath string) ([]string, error) {
 	files := make([]string, 0, 10)
 
 	for _, entry := range entries {
-		// If error is found in the recursive calls, the list so far and the error is returned
+		// If Error is found in the recursive calls, the list so far and the Error is returned
 		if entry.IsDir() {
 			newSubpath := path.Join(subpath, entry.Name())
 			recursiveRefs, err := recursiveFindFiles(root, newSubpath)
 			files = append(files, recursiveRefs...)
-			// Return results so far if error is nil
+			// Return results so far if Error is nil
 			if err != nil {
 				return files, err
 			}
@@ -103,7 +103,7 @@ func (repo *Repo) GetAllRefs() (map[string]string, error) {
 
 // SaveTag Saves a tag with the given 'name' that points the object of the corresponding hash
 // This function does not verify that the hash is valid, that is the caller's responsibility
-// An error is thrown if the tag already exists
+// An Error is thrown if the tag already exists
 func (repo *Repo) SaveTag(name string, hash string) error {
 	tagsDir := path.Join(repo.GitDir, "refs", "tags")
 	// Check that the tag doesn't already exist

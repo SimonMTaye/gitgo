@@ -11,8 +11,8 @@ import (
 )
 
 // Returns a header struct with the signature bits set to the default
-func CreateIndexHeader(version int, entries int) IndexHeader {
-	return IndexHeader{
+func createIndexHeader(version int, entries int) indexHeader {
+	return indexHeader{
 		Signature: defaultSignature,
 		Version:   int32(version),
 		NumEntry:  int32(entries),
@@ -21,7 +21,7 @@ func CreateIndexHeader(version int, entries int) IndexHeader {
 
 // Currently doesn't support modifying the stage bit
 // Could use an int for the stage parameter and panic if it is out of bounds (i.e. > 4 or < 0)
-func CreateFlag(assumeValid bool, extended bool, name string) entryFlags {
+func createFlag(assumeValid bool, extended bool, name string) entryFlags {
 	data := int16(0)
 	if assumeValid {
 		// Set the assume valid bit and then shift it one bit to left
@@ -55,9 +55,9 @@ func parseFileMode(statMode uint32) uint32 {
 	return statMode
 }
 
-// ToBytes Use the binary package to covert the metadata directly to bytes as no processing
+// Serialize Use the binary package to covert the metadata directly to bytes as no processing
 // needs to be done
-func (idxMdt *indexEntryMetadata) ToBytes() []byte {
+func (idxMdt *indexEntryMetadata) Serialize() []byte {
 	buf := &bytes.Buffer{}
 	err := binary.Write(buf, binary.BigEndian, idxMdt)
 	if err != nil {
@@ -66,9 +66,9 @@ func (idxMdt *indexEntryMetadata) ToBytes() []byte {
 	return buf.Bytes()
 }
 
-// ToBytes Convert an IndexEntry into bytes
-func (idx *IndexEntry) ToBytes() []byte {
-	data := idx.Metadata.ToBytes()
+// Serialize Convert an IndexEntry into bytes
+func (idx *IndexEntry) Serialize() []byte {
+	data := idx.Metadata.Serialize()
 	data = append(data, idx.Name...)
 	// Name must be null terminated
 	data = append(data, 0x0)
@@ -94,7 +94,7 @@ func (idx *IndexEntry) Hash() []byte {
 }
 
 // Convert a file mode (stored as a uint32) into a human-readable string
-func FormattedMode(mode uint32) string {
+func formattedMode(mode uint32) string {
 	modestr := ""
 	for i := 0; i < 3; i++ {
 		// +16 because the first 16 bits are always set to 0 and the data
@@ -116,14 +116,14 @@ func FormattedMode(mode uint32) string {
 }
 
 // Converts an entry into its string form
-func (idx *IndexEntry) Stringer() string {
+func (idx *IndexEntry) String() string {
 	hashString := hex.EncodeToString(idx.Hash())
-	modeString := FormattedMode(idx.Metadata.FileMode)
-	return fmt.Sprintf("%s %s %d\t%s", modeString, hashString, idx.Stage(), idx.Name)
+	modeString := formattedMode(idx.Metadata.FileMode)
+	return fmt.Sprintf("%s %s %d\t%s", modeString, hashString, idx.stage(), idx.Name)
 }
 
-// ToBytes Convert an Extension's metadata into a byte slice
-func (extMeta *ExtensionMetadata) ToBytes() []byte {
+// Serialize Convert an Extension's metadata into a byte slice
+func (extMeta *ExtensionMetadata) Serialize() []byte {
 	buf := &bytes.Buffer{}
 	err := binary.Write(buf, binary.BigEndian, extMeta)
 	if err != nil {
@@ -132,15 +132,15 @@ func (extMeta *ExtensionMetadata) ToBytes() []byte {
 	return buf.Bytes()
 }
 
-// ToBytes Convert an extension into a byte slice
-func (ext *Extension) ToBytes() []byte {
-	data := ext.Metadata.ToBytes()
+// Serialize Convert an extension into a byte slice
+func (ext *Extension) Serialize() []byte {
+	data := ext.Metadata.Serialize()
 	data = append(data, ext.Data...)
 	return data
 }
 
-// ToBytes Convert a header into a byte slice
-func (hdr *IndexHeader) ToBytes() []byte {
+// Serialize Convert a header into a byte slice
+func (hdr *indexHeader) Serialize() []byte {
 	dataInBytes := make([]byte, 12)
 	n := copy(dataInBytes, hdr.Signature[:4])
 	if n != 4 {
@@ -156,32 +156,32 @@ func (hdr *IndexHeader) ToBytes() []byte {
 // Covert an Index struct into a byte slice
 func (idx *Index) bytesWithoutHash() []byte {
 	dataInBytes := make([]byte, 0)
-	dataInBytes = append(dataInBytes, idx.Header.ToBytes()...)
+	dataInBytes = append(dataInBytes, idx.Header.Serialize()...)
 	// Add entries
 	for _, entry := range idx.Entries {
-		entryBytes := entry.ToBytes()
+		entryBytes := entry.Serialize()
 		dataInBytes = append(dataInBytes, entryBytes...)
 
 	}
 	// Add extensions
 	for _, ext := range idx.Extensions {
-		dataInBytes = append(dataInBytes, ext.ToBytes()...)
+		dataInBytes = append(dataInBytes, ext.Serialize()...)
 	}
 	return dataInBytes
 }
 
-// ToBytes Adds the hash to the []byte returned by bytesWithoutHash. Functions are separated
+// Serialize Adds the hash to the []byte returned by bytesWithoutHash. Functions are separated
 // for use when computing the hash it self
-func (idx *Index) ToBytes() []byte {
+func (idx *Index) Serialize() []byte {
 	return append(idx.bytesWithoutHash(), idx.Hash...)
 }
 
 // Sets the indexs hash field based on the data it contains
-func (idx *Index) CalculateHash() error {
+func (idx *Index) calculateHash() error {
 	dataInBytes := idx.bytesWithoutHash()
 	hash := sha1.Sum(dataInBytes)
 	idx.Hash = hash[:]
-	// In case there is an error in this process, return it
+	// In case there is an Error in this process, return it
 	return nil
 }
 
@@ -195,15 +195,14 @@ func (idx *Index) EntryExists(name string) (bool, int) {
 	return false, -1
 }
 
-// AddEntry Add an entry to an index struct
-// TODO should check for existing entry first
-func (idx *Index) AddEntry(entry *IndexEntry) error {
+// addEntry Add an entry to an index struct
+func (idx *Index) addEntry(entry *IndexEntry) error {
 	// Increment the entry num
 	idx.Header.NumEntry++
 	idx.Entries = append(idx.Entries, entry)
-	idx.SortEntries()
-	// Return CalculateHash since it also returns an error
-	return idx.CalculateHash()
+	idx.sortEntries()
+	// Return calculateHash since it also returns an Error
+	return idx.calculateHash()
 }
 
 // Delete an Entry from the index
@@ -226,17 +225,17 @@ func (idx *Index) UpdateEntry(entry *IndexEntry) error {
 			return err
 		}
 	}
-	return idx.AddEntry(entry)
+	return idx.addEntry(entry)
 }
 
 // Sorts the entries in an index based on their Name (i.e. file name) and if they match
 // their staging values,
-func (idx *Index) SortEntries() {
+func (idx *Index) sortEntries() {
 	// Sort the index entries whenver a new entry is added
 	// Index is ALWAYS assumed to be sorted
 	sort.Slice(idx.Entries, func(i, j int) bool {
 		if idx.Entries[i].Name == idx.Entries[j].Name {
-			return idx.Entries[i].Stage() < idx.Entries[j].Stage()
+			return idx.Entries[i].stage() < idx.Entries[j].stage()
 		}
 		return idx.Entries[i].Name < idx.Entries[j].Name
 	})
@@ -244,6 +243,7 @@ func (idx *Index) SortEntries() {
 }
 
 //TODO Add search entries for quickly finding  an index
+
 // Write an extension with its data into the index. Determines the size value of stored
 // in the extension header based on the length of data
 func (idx *Index) AddExtension(signature [4]byte, data []byte) error {
@@ -254,7 +254,7 @@ func (idx *Index) AddExtension(signature [4]byte, data []byte) error {
 	}
 	ext := &Extension{Metadata: extHeader, Data: data}
 	idx.Extensions = append(idx.Extensions, ext)
-	// Return error incase there is an error somewhere
+	// Return Error incase there is an Error somewhere
 	return nil
 }
 
@@ -264,14 +264,14 @@ func (idx *Index) IsEmpty() bool {
 
 // Create an empty index. Used for repositories where the staging file is not present
 func EmptyIndex() *Index {
-	header := CreateIndexHeader(2, 0)
+	header := createIndexHeader(2, 0)
 	index := &Index{
 		Header:     &header,
 		Entries:    make([]*IndexEntry, 0),
 		Extensions: make([]*Extension, 0),
 		Hash:       make([]byte, 20),
 	}
-	err := index.CalculateHash()
+	err := index.calculateHash()
 	if err != nil {
 		return nil
 	}
