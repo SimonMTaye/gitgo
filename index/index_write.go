@@ -1,4 +1,4 @@
-package repo
+package index
 
 import (
 	"bytes"
@@ -67,7 +67,7 @@ func (idxMdt *indexEntryMetadata) Serialize() []byte {
 }
 
 // Serialize Convert an IndexEntry into bytes
-func (idx *IndexEntry) Serialize() []byte {
+func (idx *Entry) Serialize() []byte {
 	data := idx.Metadata.Serialize()
 	data = append(data, idx.Name...)
 	// Name must be null terminated
@@ -89,7 +89,7 @@ func (idx *IndexEntry) Serialize() []byte {
 }
 
 // Hash Conveinience function for getting the hash of an object
-func (idx *IndexEntry) Hash() []byte {
+func (idx *Entry) Hash() []byte {
 	return idx.Metadata.ObjHash[:]
 }
 
@@ -99,7 +99,7 @@ func formattedMode(mode uint32) string {
 	for i := 0; i < 3; i++ {
 		// +16 because the first 16 bits are always set to 0 and the data
 		// begins at bit 16 (i.e. the 17th bit)
-		if bitSet32(mode, i+16) {
+		if BitSet32(mode, i+16) {
 			modestr += "1"
 		} else {
 			modestr += "0"
@@ -116,7 +116,7 @@ func formattedMode(mode uint32) string {
 }
 
 // Converts an entry into its string form
-func (idx *IndexEntry) String() string {
+func (idx *Entry) String() string {
 	hashString := hex.EncodeToString(idx.Hash())
 	modeString := formattedMode(idx.Metadata.FileMode)
 	return fmt.Sprintf("%s %s %d\t%s", modeString, hashString, idx.stage(), idx.Name)
@@ -170,12 +170,6 @@ func (idx *Index) bytesWithoutHash() []byte {
 	return dataInBytes
 }
 
-// Serialize Adds the hash to the []byte returned by bytesWithoutHash. Functions are separated
-// for use when computing the hash it self
-func (idx *Index) Serialize() []byte {
-	return append(idx.bytesWithoutHash(), idx.Hash...)
-}
-
 // Sets the indexs hash field based on the data it contains
 func (idx *Index) calculateHash() error {
 	dataInBytes := idx.bytesWithoutHash()
@@ -185,7 +179,13 @@ func (idx *Index) calculateHash() error {
 	return nil
 }
 
-// Check if an entry with the specified name exists
+// Serialize Adds the hash to the []byte returned by bytesWithoutHash. Functions are separated
+// for use when computing the hash it self
+func (idx *Index) Serialize() []byte {
+	return append(idx.bytesWithoutHash(), idx.Hash...)
+}
+
+// EntryExists Check if an entry with the specified name exists
 func (idx *Index) EntryExists(name string) (bool, int) {
 	for i, entries := range idx.Entries {
 		if entries.Name == name {
@@ -196,7 +196,7 @@ func (idx *Index) EntryExists(name string) (bool, int) {
 }
 
 // addEntry Add an entry to an index struct
-func (idx *Index) addEntry(entry *IndexEntry) error {
+func (idx *Index) addEntry(entry *Entry) error {
 	// Increment the entry num
 	idx.Header.NumEntry++
 	idx.Entries = append(idx.Entries, entry)
@@ -205,19 +205,9 @@ func (idx *Index) addEntry(entry *IndexEntry) error {
 	return idx.calculateHash()
 }
 
-// Delete an Entry from the index
-func (idx *Index) DeleteEntry(pos int) error {
-	if pos < 0 || pos >= len(idx.Entries) {
-		return errors.New("the position provided for deletion is invalid")
-	}
-	// Costly operation
-	idx.Entries = append(idx.Entries[:pos], idx.Entries[pos+1:]...)
-	return nil
-}
-
 // Adds an entry to the index struct if it doesn't exist or replaces the existing entry
 // with the provided one if it already there
-func (idx *Index) UpdateEntry(entry *IndexEntry) error {
+func (idx *Index) updateEntry(entry *Entry) error {
 	exists, pos := idx.EntryExists(entry.Name)
 	if exists {
 		err := idx.DeleteEntry(pos)
@@ -226,6 +216,27 @@ func (idx *Index) UpdateEntry(entry *IndexEntry) error {
 		}
 	}
 	return idx.addEntry(entry)
+}
+
+// AddFile AddFiles adds a file to the index or updates its information if it already exists
+func (idx *Index) AddFile(rootDir string, fileName string) error {
+	entry, err := createEntry(rootDir, fileName)
+	if err != nil {
+		return err
+	}
+	// If the entry already exists, update it
+	err = idx.updateEntry(entry)
+	return err
+}
+
+// DeleteEntry Delete an Entry from the index
+func (idx *Index) DeleteEntry(pos int) error {
+	if pos < 0 || pos >= len(idx.Entries) {
+		return errors.New("the position provided for deletion is invalid")
+	}
+	// Costly operation
+	idx.Entries = append(idx.Entries[:pos], idx.Entries[pos+1:]...)
+	return nil
 }
 
 // Sorts the entries in an index based on their Name (i.e. file name) and if they match
@@ -244,7 +255,7 @@ func (idx *Index) sortEntries() {
 
 //TODO Add search entries for quickly finding  an index
 
-// Write an extension with its data into the index. Determines the size value of stored
+// AddExtension Write an extension with its data into the index. Determines the size value of stored
 // in the extension header based on the length of data
 func (idx *Index) AddExtension(signature [4]byte, data []byte) error {
 	extHeader := &ExtensionMetadata{Signature: signature, Size: int32(len(data))}
@@ -262,12 +273,12 @@ func (idx *Index) IsEmpty() bool {
 	return idx.Header.NumEntry == 0
 }
 
-// Create an empty index. Used for repositories where the staging file is not present
+// EmptyIndex Create an empty index. Used for repositories where the staging file is not present
 func EmptyIndex() *Index {
 	header := createIndexHeader(2, 0)
 	index := &Index{
 		Header:     &header,
-		Entries:    make([]*IndexEntry, 0),
+		Entries:    make([]*Entry, 0),
 		Extensions: make([]*Extension, 0),
 		Hash:       make([]byte, 20),
 	}

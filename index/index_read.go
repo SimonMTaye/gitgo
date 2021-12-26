@@ -1,4 +1,4 @@
-package repo
+package index
 
 import (
 	"bytes"
@@ -50,10 +50,10 @@ func bitSet(bits uint16, pos int) bool {
 	return wantedBits == 1
 }
 
-// Check if a certain bit in a 32 bit is a 0 or a 1. 'true' means 1 and 'false' means 0
+// BitSet32 Check if a certain bit in a 32 bit is a 0 or a 1. 'true' means 1 and 'false' means 0
 // Used by flag structs to check if a certain flag was set or not
 // pos is the 0-index left-to-right position of the bit that is to be checked
-func bitSet32(bits uint32, pos int) bool {
+func BitSet32(bits uint32, pos int) bool {
 	if pos > 31 || pos < 0 {
 		return false
 	}
@@ -99,24 +99,24 @@ func (eF *entryFlags) stage() int {
 }
 
 // Extended Alias for flag.extended()
-func (idx *IndexEntry) Extended() bool {
+func (idx *Entry) Extended() bool {
 	return idx.Metadata.Flags.extended()
 }
 
 // nameLength Alias for flag.nameLength()
-func (idx *IndexEntry) nameLength() int {
+func (idx *Entry) nameLength() int {
 	return idx.Metadata.Flags.nameLength()
 }
 
 // stage Alias for flag.stage()
-func (idx *IndexEntry) stage() int {
+func (idx *Entry) stage() int {
 	return idx.Metadata.Flags.stage()
 }
 
 type version3Flags uint16
 
-// Struct for storing Sec and Nano-sec pair (for c-time and m-time) as an int32 pair
-type timePair struct {
+// TimePair Struct for storing Sec and Nano-sec pair (for c-time and m-time) as an int32 pair
+type TimePair struct {
 	Sec  int32
 	Nsec int32
 }
@@ -126,9 +126,9 @@ type timePair struct {
 // Variable length items (such as v3 headers and names) will be parsed separetly
 type indexEntryMetadata struct {
 	// Last time metadata changed. First int is seconds, second one is fractional nanoseconds
-	Ctime timePair
+	Ctime TimePair
 	// Last time file data changed in seconds
-	Mtime timePair
+	Mtime TimePair
 	// Inode number and device id for the file being represnted by this entries
 	Ino uint32
 	Dev uint32
@@ -149,30 +149,30 @@ type indexEntryMetadata struct {
 	Flags   entryFlags
 }
 
-// Struct that represents a single index entry, usually a file
-type IndexEntry struct {
+// Entry Struct that represents a single index entry, usually a file
+type Entry struct {
 	Metadata *indexEntryMetadata
 	Name     string
 	V3Flags  *version3Flags
 }
 
-// First 8 bytes of an extension which is the same for all extensions
+// ExtensionMetadata First 8 bytes of an extension which is the same for all extensions
 type ExtensionMetadata struct {
 	Signature [4]byte
 	Size      int32
 }
 
-// Holds index extension information. This program won't handle extensions, this is merely
+// Extension Holds index extension information. This program won't handle extensions, this is merely
 // for parsing  an index file correctly
 type Extension struct {
 	Metadata *ExtensionMetadata
 	Data     []byte
 }
 
-// Struct that represents an index
+// Index Struct that represents an index
 type Index struct {
 	Header     *indexHeader
-	Entries    []*IndexEntry
+	Entries    []*Entry
 	Extensions []*Extension
 	// 20 because that's how long sha1 hashes are
 	Hash []byte
@@ -189,7 +189,7 @@ func parseHeader(src io.Reader) (*indexHeader, error) {
 }
 
 // Parse bytes from io.Reader into an IndexEntry
-func parseEntry(src io.Reader, idxVersion int) (*IndexEntry, int, error) {
+func parseEntry(src io.Reader, idxVersion int) (*Entry, int, error) {
 	// Does not handle version 4 index so throw Error
 	if idxVersion > 3 {
 		return nil, 0, &ErrIndexBadlyFormated{reason: "only index version 2 and 3 are supported"}
@@ -201,7 +201,7 @@ func parseEntry(src io.Reader, idxVersion int) (*IndexEntry, int, error) {
 	}
 	// Since the size of the metadata is 62 bytes
 	bytesRead := 62
-	entry := &IndexEntry{Metadata: metadata}
+	entry := &Entry{Metadata: metadata}
 	// Shortcut to minimize repition
 	flags := entry.Metadata.Flags
 	//Read version3 flags if the extended bit is set and the version is 3 or higher
@@ -273,7 +273,7 @@ func parseExtension(data []byte) ([]*Extension, int, error) {
 
 }
 
-// Parse an Index file
+// ParseIndex Parse an Index file
 func ParseIndex(src io.Reader) (*Index, error) {
 	header, err := parseHeader(src)
 	if err != nil {
@@ -282,7 +282,7 @@ func ParseIndex(src io.Reader) (*Index, error) {
 	if header.Version < 2 || header.Version > 3 {
 		return nil, &ErrIndexBadlyFormated{reason: "only index version 2 and 3 are supported"}
 	}
-	entries := make([]*IndexEntry, 0, header.NumEntry)
+	entries := make([]*Entry, 0, header.NumEntry)
 	for i := int32(0); i < header.NumEntry; i++ {
 		// Amount of padding bytes : total bytes of entry % 8 (i.e. it is so the entry takes up a multiple of 8 amount of bytes
 		entry, n, err := parseEntry(src, header.versionNum())
@@ -293,7 +293,10 @@ func ParseIndex(src io.Reader) (*Index, error) {
 			// Read the padding bytes that will be present
 			// They are there to make each entry a multiple of 8 bytes (hence the modulo)
 			tempSlice := make([]byte, 8-(n%8))
-			src.Read(tempSlice)
+			_, err := src.Read(tempSlice)
+			if err != nil {
+				return nil, err
+			}
 		}
 		if err != nil {
 			return nil, err
@@ -333,20 +336,6 @@ func printBits(bits uint16) string {
 	bitString := ""
 	for i := 0; i < 16; i++ {
 		wantedBit := bits >> (15 - i)
-		wantedBit = wantedBit & 0x1
-		if wantedBit == 1 {
-			bitString += "1"
-		} else {
-			bitString += "0"
-		}
-	}
-	return bitString
-}
-
-func printBits32(bits uint32) string {
-	bitString := ""
-	for i := 0; i < 32; i++ {
-		wantedBit := bits >> (31 - i)
 		wantedBit = wantedBit & 0x1
 		if wantedBit == 1 {
 			bitString += "1"
