@@ -137,7 +137,10 @@ func TestFindObject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected Error when writing to file refs/heads/test:\n%s", err.Error())
 	}
-	file.Close()
+	err = file.Close()
+	if err != nil {
+		return
+	}
 
 	headSearch, err := repo.FindObject("test")
 	if err != nil {

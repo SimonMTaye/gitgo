@@ -8,6 +8,8 @@ import (
 
 const SystemPath = "/etc/gitconfig"
 const GlobalPathFirst = "~/.gitconfig"
+
+//goland:noinspection GoUnusedConst
 const GlobalPathSecond = "~/.config/git/config"
 
 type Config struct {

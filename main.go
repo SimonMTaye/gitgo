@@ -300,7 +300,10 @@ var hashObjectCommand = cli.NewCommand("hash-object", "Compute object ID and opt
 				return 1
 			}
 			// Save the object if the "-w" is used
-			repoStruct.SaveObject(blob)
+			err = repoStruct.SaveObject(blob)
+			if err != nil {
+				return 0
+			}
 		}
 		return 0
 	})

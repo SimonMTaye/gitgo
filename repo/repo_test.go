@@ -110,7 +110,10 @@ func TestOpenRepoWithBranches(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected Error when parsing config file for testing:\n%s", err.Error())
 	}
-	configFile.Close()
+	err = configFile.Close()
+	if err != nil {
+		return
+	}
 
 	configIni.SetProperty("branch \"main\"", "remote", "origin")
 	configIni.SetProperty("branch \"main\"", "merge", "refs/heads/main")
@@ -121,8 +124,14 @@ func TestOpenRepoWithBranches(t *testing.T) {
 			err.Error())
 	}
 
-	configFile.WriteString(configIni.String())
-	configFile.Close()
+	_, err = configFile.WriteString(configIni.String())
+	if err != nil {
+		return
+	}
+	err = configFile.Close()
+	if err != nil {
+		return
+	}
 
 	repo, err := OpenRepo(tmpDir)
 	if err != nil {

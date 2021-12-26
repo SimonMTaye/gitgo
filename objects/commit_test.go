@@ -10,8 +10,14 @@ import (
 // and object size
 func TestCommit(t *testing.T) {
 	commit := &GitCommit{}
-	commit.SetAuthorAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
-	commit.SetCommitterAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
+	err := commit.SetAuthorAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
+	if err != nil {
+		return
+	}
+	err = commit.SetCommitterAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
+	if err != nil {
+		return
+	}
 	commit.TreeHash = "a6fea408f7673f5ef6fa1d8561ee7bc06fd69d3a"
 	commit.Msg = "Initial commit\n\n" +
 		"Created package to parse .ini files and some tests.\n" +
@@ -35,8 +41,14 @@ func TestCommit(t *testing.T) {
 // a bunch of bytes that represent an ANSI string"
 func TestCommitDeseralizing(t *testing.T) {
 	commit := &GitCommit{}
-	commit.SetAuthorAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
-	commit.SetCommitterAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
+	err := commit.SetAuthorAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
+	if err != nil {
+		return
+	}
+	err = commit.SetCommitterAndTime("Simon Taye", "mulat.simon@gmail.com", 1623004337, 0)
+	if err != nil {
+		return
+	}
 	commit.TreeHash = "a6fea408f7673f5ef6fa1d8561ee7bc06fd69d3a"
 	commit.Msg = "Initial commit\n\n" +
 		"Created package to parse .ini files and some tests.\n" +

@@ -4,7 +4,6 @@ import (
 	"github.com/SimonMTaye/gitgo/objects"
 	"github.com/SimonMTaye/gitgo/repo"
 	"os"
-	"path"
 )
 
 // AddHelper Helper functions for the cli
@@ -14,33 +13,7 @@ func AddHelper(repodir string, filepath string) error {
 	if err != nil {
 		return err
 	}
-	// TODO Handle the index not being created yet
-	index, err := repoStruct.Index()
-	if err != nil {
-		return err
-	}
-	entry, err := repo.CreateEntry(repoStruct.GitDir, filepath)
-	if err != nil {
-		return err
-	}
-	blob, err := objects.FileBlob(path.Join(repoStruct.GitDir, filepath))
-	if err != nil {
-		return err
-	}
-	err = repoStruct.SaveObject(blob)
-	if err != nil {
-		return err
-	}
-	// If the entry already exists, update it
-	err = index.UpdateEntry(entry)
-	if err != nil {
-		return err
-	}
-	err = repoStruct.WriteIndex(index)
-	if err != nil {
-		return err
-	}
-	return nil
+	return repoStruct.AddFile(filepath)
 }
 
 // CatfileHelper Find an object based on a search string

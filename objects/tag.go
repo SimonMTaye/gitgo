@@ -126,7 +126,7 @@ func (tag *GitTag) computeSize() int {
 	return size
 }
 
-// Set the object hash and object type of the tag.
+// SetObject Set the object hash and object type of the tag.
 // Can use struct field assignment, but a function that assigns them together empasizes
 // that they represent information about the same object
 func (tag *GitTag) SetObject(objType GitObjectType, objHash string) {
@@ -134,7 +134,7 @@ func (tag *GitTag) SetObject(objType GitObjectType, objHash string) {
 	tag.tagType = objType
 }
 
-// Set the tagger (i.e. the person creating the tag)
+// SetTagger Set the tagger (i.e. the person creating the tag)
 // the current system time and timezone will be used as a timestamp
 func (tag *GitTag) SetTagger(name string, email string) {
 	curTime := time.Now()
@@ -150,7 +150,7 @@ func (tag *GitTag) SetTagger(name string, email string) {
 	tag.tagger = &tagger
 }
 
-// Set the tagger and the timezone for the tag
+// SetTaggerAndTime Set the tagger and the timezone for the tag
 func (tag *GitTag) SetTaggerAndTime(name string,
 	email string,
 	timeInUnix int64,

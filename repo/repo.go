@@ -3,6 +3,7 @@ package repo
 
 import (
 	"errors"
+	"github.com/SimonMTaye/gitgo/index"
 	"os"
 	"path"
 	"strings"
@@ -128,20 +129,20 @@ func exists(entries []os.DirEntry, name string) bool {
 }
 
 // Index Parse the index file of repo and return a struct representing the staging area. If the index doesn't already, create a new one
-func (repo *Repo) Index() (*Index, error) {
+func (repo *Repo) Index() (*index.Index, error) {
 	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
 	if err != nil {
 		perr, ok := err.(*os.PathError)
 		if ok && perr.Err == os.ErrNotExist {
-			return EmptyIndex(), nil
+			return index.EmptyIndex(), nil
 		}
 		return nil, err
 	}
-	return ParseIndex(indexFile)
+	return index.ParseIndex(indexFile)
 }
 
 // WriteIndex Write an Index struct to the index file of the repo
-func (repo *Repo) WriteIndex(index *Index) error {
+func (repo *Repo) WriteIndex(index *index.Index) error {
 	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
 	if err != nil {
 		return err

@@ -21,7 +21,7 @@ import (
 // where 0000 indicates offset from UTC; +/- indicates postive/negative difference
 // timestamp: number of seconds since Jan 1, 1970 00:00
 
-// A commit object
+// GitCommit A commit object
 type GitCommit struct {
 	TreeHash   string
 	ParentHash string
@@ -185,7 +185,7 @@ func (commit *GitCommit) Size() string {
 	return fmt.Sprint(commit.computeSize())
 }
 
-// Process a commit string (stored in a commit file) and sets and object field based on
+// Deserialize Process a commit string (stored in a commit file) and sets and object field based on
 // the data
 func (commit *GitCommit) Deserialize(src []byte) {
 	commit.Msg = ""
@@ -290,39 +290,39 @@ func (commit *GitCommit) computeSize() int {
 
 }
 
-// Set the commit author (i.e. the original author of the code in the commit)
+// SetAuthor Set the commit author (i.e. the original author of the code in the commit)
 // the system time and timezone will be used for those fields
 func (commit *GitCommit) SetAuthor(name string, email string) {
-	time := time.Now()
-	_, tzOffset := time.Zone()
+	curTime := time.Now()
+	_, tzOffset := curTime.Zone()
 	tOffset, err := fromOffset(tzOffset)
 	if err != nil {
 		panic(err)
 	}
 	author := commitIdentity{name: name,
 		email:    email,
-		time:     time.Unix(),
+		time:     curTime.Unix(),
 		timezone: *tOffset}
 	commit.author = &author
 }
 
-// Set the commit committer (i.e. the person committing the code)
+// SetCommitter Set the commit committer (i.e. the person committing the code)
 // the system time and timezone will be used for those fields
 func (commit *GitCommit) SetCommitter(name string, email string) {
-	time := time.Now()
-	_, tzOffset := time.Zone()
+	curTime := time.Now()
+	_, tzOffset := curTime.Zone()
 	tOffset, err := fromOffset(tzOffset)
 	if err != nil {
 		panic(err)
 	}
 	committer := commitIdentity{name: name,
 		email:    email,
-		time:     time.Unix(),
+		time:     curTime.Unix(),
 		timezone: *tOffset}
 	commit.committer = &committer
 }
 
-// Set the commit author (i.e. the original author of the code in the commit)
+// SetAuthorAndTime Set the commit author (i.e. the original author of the code in the commit)
 // tz_offset denotes the offset of time in seconds from UTC
 func (commit *GitCommit) SetAuthorAndTime(name string,
 	email string,
@@ -340,7 +340,7 @@ func (commit *GitCommit) SetAuthorAndTime(name string,
 	return nil
 }
 
-// Set the commit committer (i.e. the person committing the code)
+// SetCommitterAndTime Set the commit committer (i.e. the person committing the code)
 // tz_offset denotes the offset of time in seconds from UTC
 func (commit *GitCommit) SetCommitterAndTime(name string,
 	email string,

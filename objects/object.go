@@ -56,16 +56,26 @@ const (
 func CompressAndSave(dst io.Writer, obj GitObject) error {
 	zWriter := zlib.NewWriter(dst)
 	// Write the object Header
-	zWriter.Write(Header(obj))
+	_, err := zWriter.Write(Header(obj))
+	if err != nil {
+		return err
+	}
 	// Write the data itself
-	zWriter.Write(obj.Serialize())
+	_, err = zWriter.Write(obj.Serialize())
+	if err != nil {
+		return err
+	}
 	return zWriter.Close()
 }
 
 // DecompressAndRead decompress contents in src and parse the resulting data as an object
 func DecompressAndRead(src io.Reader) (GitObject, error) {
 	zReader, err := zlib.NewReader(src)
-	defer zReader.Close()
+	defer func(zReader io.ReadCloser) {
+		err := zReader.Close()
+		if err != nil {
+		}
+	}(zReader)
 	if err != nil {
 		return nil, err
 	}

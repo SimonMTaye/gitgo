@@ -12,8 +12,14 @@ func CreateAndWrite(path string, content string) error {
 	if err != nil {
 		return err
 	}
-	file.WriteString(content)
-	file.Close()
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
+	err = file.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

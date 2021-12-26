@@ -49,7 +49,7 @@ func (section *Section) String() string {
 	return sectionString
 }
 
-//Compares two IniFiles and returns 'true' if both Inis have identical
+// EqualInis Compares two IniFiles and returns 'true' if both Inis have identical
 //key-value pairs
 func EqualInis(ini1 *IniFile, ini2 *IniFile) bool {
 	if len(*ini1) != len(*ini2) {

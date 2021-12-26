@@ -119,11 +119,15 @@ func (repo *Repo) SaveTag(name string, hash string) error {
 		return err
 	}
 	_, err = file.WriteString(hash)
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+		}
+	}(file)
 	return err
 }
 
-// Deletes a tag from the list of tags.
+// DeleteTag Deletes a tag from the list of tags.
 // If the tag points to a tag object, delete that too
 func (repo *Repo) DeleteTag(name string) error {
 	tagsDir := path.Join(repo.GitDir, "refs", "tags")

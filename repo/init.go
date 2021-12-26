@@ -65,7 +65,11 @@ func CreateRepo(cwd string, description string, worktree string) error {
 	if err != nil {
 		return err
 	}
-	defer configFile.Close()
+	defer func(configFile *os.File) {
+		err := configFile.Close()
+		if err != nil {
+		}
+	}(configFile)
 
 	_, err = configFile.Write([]byte(defaultConfig(worktree)))
 	if err != nil {
@@ -91,8 +95,15 @@ func CreateRepo(cwd string, description string, worktree string) error {
 	}
 	headFile, err := os.Create(filepath.Join(gitDir, "HEAD"))
 	// Set new branch as head
-	headFile.WriteString("ref: refs/heads/" + initBranchName + "\n")
-	defer headFile.Close()
+	_, err = headFile.WriteString("ref: refs/heads/" + initBranchName + "\n")
+	if err != nil {
+		return err
+	}
+	defer func(headFile *os.File) {
+		err := headFile.Close()
+		if err != nil {
+		}
+	}(headFile)
 	if err != nil {
 		return err
 	}
@@ -100,7 +111,11 @@ func CreateRepo(cwd string, description string, worktree string) error {
 	if err != nil {
 		return err
 	}
-	defer descriptionFile.Close()
+	defer func(descriptionFile *os.File) {
+		err := descriptionFile.Close()
+		if err != nil {
+		}
+	}(descriptionFile)
 
 	if description != "" {
 		_, err = descriptionFile.Write([]byte(description))
