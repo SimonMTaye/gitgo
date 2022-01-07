@@ -27,7 +27,7 @@ func (repo *Repo) Commit(msg string) error {
 			return err
 		}
 	}
-	configs, err := config.LoadConfig(repo.GitDir)
+	configs, err := config.LoadConfig(path.Join(repo.GitDir, "config"))
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (repo *Repo) Commit(msg string) error {
 
 // AddFile adds a file entry to the index
 func (repo *Repo) AddFile(filepath string) error {
-	blob, err := objects.FileBlob(path.Join(repo.GitDir, filepath))
+	blob, err := objects.FileBlob(path.Join(repo.Worktree, filepath))
 	if err != nil {
 		return err
 	}
@@ -67,6 +67,10 @@ func (repo *Repo) AddFile(filepath string) error {
 	}
 	// Update the staging area with the new file
 	idx, err := repo.Index()
+	if err != nil {
+		return err
+	}
+
 	err = idx.AddFile(repo.Worktree, filepath)
 	if err != nil {
 		return err

@@ -2,7 +2,6 @@
 package repo
 
 import (
-	"errors"
 	"github.com/SimonMTaye/gitgo/index"
 	"os"
 	"path"
@@ -128,13 +127,30 @@ func exists(entries []os.DirEntry, name string) bool {
 	return false
 }
 
+func (repo *Repo) initIndex() (*index.Index, error) {
+	f, err := os.Create(path.Join(repo.GitDir, "index"))
+	err = f.Close()
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	idx := index.EmptyIndex()
+	err = repo.WriteIndex(idx)
+	if err != nil {
+		return nil, err
+	}
+	return idx, nil
+}
+
 // Index Parse the index file of repo and return a struct representing the staging area. If the index doesn't already, create a new one
 func (repo *Repo) Index() (*index.Index, error) {
 	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
 	if err != nil {
-		perr, ok := err.(*os.PathError)
-		if ok && perr.Err == os.ErrNotExist {
-			return index.EmptyIndex(), nil
+		_, ok := err.(*os.PathError)
+		if ok {
+			return repo.initIndex()
 		}
 		return nil, err
 	}
@@ -143,19 +159,7 @@ func (repo *Repo) Index() (*index.Index, error) {
 
 // WriteIndex Write an Index struct to the index file of the repo
 func (repo *Repo) WriteIndex(index *index.Index) error {
-	indexFile, err := os.Open(path.Join(repo.GitDir, "index"))
-	if err != nil {
-		return err
-	}
-	indexBytes := index.Serialize()
-	n, err := indexFile.Write(indexBytes)
-	if err != nil {
-		return err
-	}
-	if n != len(indexBytes) {
-		return errors.New("the bytes written to the index file are inconsistent")
-	}
-	return nil
+	return os.WriteFile(path.Join(repo.GitDir, "index"), index.Serialize(), 0644)
 }
 
 // UpdateCurrentBranch Updates the current branch to point to the new hash. If there is no branch (i.e. HEAD

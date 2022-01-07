@@ -95,8 +95,12 @@ func TestCommit(t *testing.T) {
 		}
 	}
 	parent := "HEAD"
-	for i := 0; i < 3; i++ {
-		obj, err := repoStruct.GetObject(parent)
+	for i := 2; i <= 0; i-- {
+		hash, err := repoStruct.FindObject(parent)
+		if err != nil {
+			t.Fatalf("Error getting hash of object: %s", err)
+		}
+		obj, err := repoStruct.GetObject(hash)
 		if err != nil {
 			t.Fatalf("Error getting object: %s", err)
 		}
@@ -104,8 +108,9 @@ func TestCommit(t *testing.T) {
 		if !ok {
 			t.Fatalf("Error: object is not a commit")
 		}
-		if commit.Msg != fmt.Sprintf("test commit %d", i) {
-			t.Errorf("Error: commit message is not correct")
+		expectedMessage := fmt.Sprintf("test commit %d", i)
+		if commit.Msg != expectedMessage {
+			t.Errorf("Error: commit message is not correct.\n Expected: %s\n Got: %s", expectedMessage, commit.Msg)
 		}
 		parent = commit.ParentHash
 	}
