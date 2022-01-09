@@ -4,6 +4,7 @@ import (
 	"github.com/SimonMTaye/gitgo/objects"
 	"github.com/SimonMTaye/gitgo/repo"
 	"os"
+	"strings"
 )
 
 // AddHelper Helper functions for the cli
@@ -12,6 +13,13 @@ func AddHelper(repodir string, filepath string) error {
 	repoStruct, err := repo.OpenRepo(repodir)
 	if err != nil {
 		return err
+	}
+	if strings.HasPrefix(filepath, ".\\") {
+		filepath = strings.Trim(filepath, ".\\")
+	}
+
+	if strings.HasPrefix(filepath, "./") {
+		filepath = strings.Trim(filepath, "./")
 	}
 	return repoStruct.AddFile(filepath)
 }

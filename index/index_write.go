@@ -48,13 +48,6 @@ func createFlag(assumeValid bool, extended bool, name string) entryFlags {
 	return entryFlags(data)
 }
 
-// Process the file mode returned by a 'stat' call into the format git expects
-func parseFileMode(statMode uint32) uint32 {
-	// TODO Filemode might need to be modified for git, not unsure if it is
-	// compatible with the filemode returned by stat
-	return statMode
-}
-
 // Serialize Use the binary package to covert the metadata directly to bytes as no processing
 // needs to be done
 func (idxMdt *indexEntryMetadata) Serialize() []byte {

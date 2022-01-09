@@ -266,7 +266,7 @@ var hashObjectCommand = cli.NewCommand("hash-object", "Compute object ID and opt
 			}
 			blob.Deserialize(data)
 		} else {
-			if len(args[0]) != 1 {
+			if len(args) != 1 {
 				fmt.Println("fatal: must provide path to file or use --stdin")
 				return 1
 			}

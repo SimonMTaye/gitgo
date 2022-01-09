@@ -89,10 +89,6 @@ func CreateRepo(cwd string, description string, worktree string) error {
 		}
 	}
 	// Create main branch ref
-	_, err = os.Create(filepath.Join(refsDir, "heads", initBranchName))
-	if err != nil {
-		return err
-	}
 	headFile, err := os.Create(filepath.Join(gitDir, "HEAD"))
 	// Set new branch as head
 	_, err = headFile.WriteString("ref: refs/heads/" + initBranchName + "\n")

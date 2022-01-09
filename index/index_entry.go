@@ -4,7 +4,6 @@
 package index
 
 import (
-	"crypto/sha1"
 	"errors"
 	"os"
 	"path"
@@ -25,19 +24,18 @@ func createEntry(rootDir string, fileName string) (*Entry, error) {
 		return nil, errors.New("Error getting 'stat' information for file: " +
 			path.Join(rootDir, fileName))
 	}
-	fileBytes, err := os.ReadFile(path.Join(rootDir, fileName))
+	hash, err := getHash(path.Join(rootDir, fileName))
 	if err != nil {
 		return nil, err
 	}
-	hash := sha1.Sum(fileBytes)
 	entryMetdata := &indexEntryMetadata{
-		Ctime:    CovertTimespec(stat.Ctim),
-		Mtime:    CovertTimespec(stat.Mtim),
+		Ctime:    covertTimespec(stat.Ctim),
+		Mtime:    TimePair{Sec: int32(fileInfo.ModTime().Second()), Nsec: int32(fileInfo.ModTime().Nanosecond())},
 		Ino:      uint32(stat.Ino),
 		Dev:      uint32(stat.Dev),
 		Uid:      stat.Uid,
 		Gid:      stat.Gid,
-		FileMode: parseFileMode(stat.Mode),
+		FileMode: getFileMode(fileInfo),
 		FileSize: int32(fileInfo.Size()),
 		Flags:    createFlag(false, false, fileName),
 		ObjHash:  hash,
@@ -46,6 +44,6 @@ func createEntry(rootDir string, fileName string) (*Entry, error) {
 	return idxEntry, nil
 }
 
-func CovertTimespec(timeSpec syscall.Timespec) TimePair {
+func covertTimespec(timeSpec syscall.Timespec) TimePair {
 	return TimePair{Sec: int32(timeSpec.Sec), Nsec: int32(timeSpec.Nsec)}
 }

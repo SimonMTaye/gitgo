@@ -29,14 +29,18 @@ Most plumbing functionality is now compelete. This project will not focus on hav
 - [ ] Test that CLI commands work as expected
     - [x] ls-files
     - [x] init
-    - [ ] add
-    - [ ] hash-object
+    - [x] add
+    - [x] hash-object
     - [ ] cat-file
     - [ ] show-ref
     - [ ] tag
     - [ ] commit
     - [ ] log
     - [ ] rm
+  
+### Possible Bugs
+- Symbolic links and Git Links have not been tested and might not work correctly
+- Git supports `0755` for file permission bits but `0644` is always used by gitgo
 #### Will not be implemented
 - Merging, managing remote repositories or otherwirse interacting with other repos
     - While this part of git's core functionality, it is beyond the scope of this project
