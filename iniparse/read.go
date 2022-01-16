@@ -1,66 +1,66 @@
 package iniparse
 
 import (
-    "io"
-    "strings"
-    "bufio"
+	"bufio"
+	"io"
+	"strings"
 )
 
-// The type of line parseLine can return
+// LineType The type of line parseLine can return
 type LineType int
+
 const (
-    CommentLine LineType = 0
-    SectionLine LineType = 1
-    EntryLine LineType = 2
-    BadLine LineType = 3
+	CommentLine LineType = 0
+	SectionLine LineType = 1
+	EntryLine   LineType = 2
+	BadLine     LineType = 3
 )
 
-// Error type for when the ini file parsing fails
+// ErrBadLine Error type for when the ini file parsing fails
 type ErrBadLine struct {
-    line string
+	line string
 }
 
 func (e ErrBadLine) Error() string {
-    slice := make([]string, 2)
-    slice[0] = "Error parsing line"
-    slice[1] = e.line
-    return strings.Join(slice, "\n")
+	slice := make([]string, 2)
+	slice[0] = "error parsing line"
+	slice[1] = e.line
+	return strings.Join(slice, "\n")
 }
 
-//Takes an io.Reader and parses into an iniFile
+// ParseIni Takes an io.Reader and parses into an iniFile
 //If an error is encoutered, returns the parsed iniFile so far and the error
 //Otherwise, returns the iniFile and nil
-func ParseIni (file io.Reader) (IniFile, error) {
+func ParseIni(file io.Reader) (IniFile, error) {
 
-    fileScanner := bufio.NewScanner(file)
-    iniFile := make(IniFile)
-    curSection := ""
-    
-    ok := fileScanner.Scan()
+	fileScanner := bufio.NewScanner(file)
+	iniFile := make(IniFile)
+	curSection := ""
 
-    for ; ok ; ok = fileScanner.Scan() {
-        line := fileScanner.Text()
-        //val: value, opt: optional (is empty unless parseLine finds a entry line
-        val, opt, lineType := parseLine(line)
+	ok := fileScanner.Scan()
 
-        if lineType == SectionLine {
-            curSection = val
-        } else if lineType == EntryLine {
+	for ; ok; ok = fileScanner.Scan() {
+		line := fileScanner.Text()
+		//val: value, opt: optional (is empty unless parseLine finds a entry line
+		val, opt, lineType := parseLine(line)
 
-            if iniFile[curSection] ==  nil {
-                iniFile[curSection] = make(Section)
-            }
+		if lineType == SectionLine {
+			curSection = val
+		} else if lineType == EntryLine {
 
-            iniFile[curSection][val] = opt
-        } else if lineType == BadLine {
-            err := ErrBadLine{line: line}
-            return iniFile, err
-        }
-    }
+			if iniFile[curSection] == nil {
+				iniFile[curSection] = make(Section)
+			}
 
-    return iniFile, fileScanner.Err()
+			iniFile[curSection][val] = opt
+		} else if lineType == BadLine {
+			err := ErrBadLine{line: line}
+			return iniFile, err
+		}
+	}
+
+	return iniFile, fileScanner.Err()
 }
-
 
 //Parses a line of an iniFile and returns the line type as well as two strings
 //For a 'EntryLine', the two strings correspond to the key-value pair, respectively.
@@ -68,24 +68,24 @@ func ParseIni (file io.Reader) (IniFile, error) {
 //containing the entire line for comments and the section name between the '[' ']' for
 //section line.
 //Space at the end of strings is trimmed before being returned
-func parseLine (line string) (string, string, LineType) {
-    line = strings.Trim(line, " ")
+func parseLine(line string) (string, string, LineType) {
+	line = strings.Trim(line, " ")
 
-    if strings.HasPrefix(line, "[") {
-        header := strings.Trim(line, "[]")
-        header = strings.Trim(header, " ")
-        return header ,"",SectionLine
-    }
+	if strings.HasPrefix(line, "[") {
+		header := strings.Trim(line, "[]")
+		header = strings.Trim(header, " \t\n")
+		return header, "", SectionLine
+	}
 
-    //# is used conventionally as a comment delimeter but not always
-    if strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
-        return line, "", CommentLine
-    }
+	//# is used conventionally as a comment delimeter but not always
+	if strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
+		return line, "", CommentLine
+	}
 
-    val := strings.Split(line, "=")
-    if len(val) > 1 {
-        return strings.Trim(val[0], " "), strings.Trim(val[1], " ") , EntryLine
-    }
+	val := strings.Split(line, "=")
+	if len(val) > 1 {
+		return strings.Trim(val[0], " \t\n"), strings.Trim(val[1], " \t\n"), EntryLine
+	}
 
-    return line, "", BadLine    
+	return line, "", BadLine
 }
