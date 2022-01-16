@@ -73,7 +73,7 @@ func parseLine(line string) (string, string, LineType) {
 
 	if strings.HasPrefix(line, "[") {
 		header := strings.Trim(line, "[]")
-		header = strings.Trim(header, " ")
+		header = strings.Trim(header, " \t\n")
 		return header, "", SectionLine
 	}
 
@@ -84,7 +84,7 @@ func parseLine(line string) (string, string, LineType) {
 
 	val := strings.Split(line, "=")
 	if len(val) > 1 {
-		return strings.Trim(val[0], " "), strings.Trim(val[1], " "), EntryLine
+		return strings.Trim(val[0], " \t\n"), strings.Trim(val[1], " \t\n"), EntryLine
 	}
 
 	return line, "", BadLine

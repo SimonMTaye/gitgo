@@ -7,10 +7,10 @@ import (
 	"os"
 )
 
-const REGULAR_0644 uint32 = 33188
-const REGULAR_0755 uint32 = 33261
-const SYMBOLIC_LINK uint32 = 40960
-const GIT_LINK uint32 = 57344
+//const Regular0755 uint32 = 33261
+//const SymbolicLink uint32 = 40960
+const Regular0644 uint32 = 33188
+const GitLink uint32 = 57344
 
 func getHash(filepath string) ([20]byte, error) {
 	hashBytes := [20]byte{}
@@ -35,7 +35,7 @@ func getHash(filepath string) ([20]byte, error) {
 // Process the file mode returned by a 'stat' call into the format git expects
 func getFileMode(info os.FileInfo) uint32 {
 	if info.Mode().IsRegular() {
-		return REGULAR_0644
+		return Regular0644
 	}
-	return GIT_LINK
+	return GitLink
 }

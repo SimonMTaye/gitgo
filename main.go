@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/SimonMTaye/gitgo/config"
 	"github.com/SimonMTaye/gitgo/objects"
@@ -184,18 +185,19 @@ var tagCommand = cli.NewCommand("tag", "tag an object with a name").
 				return 1
 			}
 			tag := &objects.GitTag{}
+			tag.SetTagName(args[0])
 			tag.SetObject(obj.Type(), hash)
 			config, err := config.LoadConfig(path.Join(repoStruct.GitDir, "config"))
 			if err != nil {
 				fmt.Println(err)
 				return 1
 			}
-			email, ok := (*config.All)["user"]["email"]
+			email, ok := (*config)["user"]["email"]
 			if !ok {
 				fmt.Println("No email set; please set the git user email")
 				return 1
 			}
-			name, ok := (*config.All)["user"]["name"]
+			name, ok := (*config)["user"]["name"]
 			if !ok {
 				fmt.Println("No name set; please set the git user name")
 				return 1
@@ -365,7 +367,7 @@ var logCommand = cli.NewCommand("log", "Show commit logs").
 		} else {
 			startObj = "HEAD"
 		}
-
+		// distance determines how many commits to show
 		distance := 5
 		if len(args) == 1 {
 			distance, err = strconv.Atoi(args[0])
@@ -391,6 +393,7 @@ var logCommand = cli.NewCommand("log", "Show commit logs").
 				fmt.Println("Unexpected object found when following HEAD")
 				return 1
 			}
+			fmt.Println("commit " + objects.Hash(commit))
 			fmt.Println(commit)
 			curHash = commit.ParentHash
 			if len(curHash) == 0 {
@@ -411,21 +414,17 @@ var rmCommand = cli.NewCommand("rm", "Remove files from the index").
 			fmt.Println(err)
 			return 1
 		}
-		idx, err := repoStruct.Index()
+		// Trim the input string
+		file := strings.Trim(args[0], " ")
+		if strings.HasPrefix(file, ".\\") {
+			file = strings.Trim(file, ".\\")
+		}
+		if strings.HasPrefix(file, "./") {
+			file = strings.Trim(file, "./")
+		}
+		err = repoStruct.Rm(file)
 		if err != nil {
 			fmt.Println(err)
-			return 1
-		}
-		exists, pos := idx.EntryExists(args[0])
-		if exists {
-			err = idx.DeleteEntry(pos)
-			if err != nil {
-				fmt.Println(err)
-				return 1
-			}
-
-		} else {
-			fmt.Println(args[0] + " doesn't exist. Use gitgo ls to list all files in the index")
 			return 1
 		}
 		return 0

@@ -97,6 +97,7 @@ func FindRepo(cwd string) (string, error) {
 		}
 
 		curDir = path.Join(curDir, "..")
+		curDir = path.Clean(curDir)
 	}
 	return "", &ErrNoRepositoryFound{dir: cwd}
 }

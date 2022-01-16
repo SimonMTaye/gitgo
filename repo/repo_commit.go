@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/SimonMTaye/gitgo/config"
 	"github.com/SimonMTaye/gitgo/objects"
+	"os"
 	"path"
 )
 
@@ -32,11 +33,24 @@ func (repo *Repo) Commit(msg string) error {
 		return err
 	}
 	headHash, err := repo.FindObject("HEAD")
+	// If the head doesn't exist (likely, this is the first commit), then set the headHash to be empty
 	if err != nil {
-		return err
+		_, ok := err.(*os.PathError)
+		if !ok {
+			return err
+		}
+		headHash = ""
 	}
-	user := (*configs.All)["user"]["name"]
-	email := (*configs.All)["user"]["email"]
+
+	user, ok := (*configs)["user"]["name"]
+	if !ok {
+		return errors.New("no user name set; please set git user name")
+	}
+	email, ok := (*configs)["user"]["email"]
+	if !ok {
+		return errors.New("no user email set; please set git user email")
+	}
+
 	commit := &objects.GitCommit{}
 	// Create commit object
 	// Root tree should be at the beginning, needs to be checked

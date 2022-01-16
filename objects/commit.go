@@ -242,7 +242,7 @@ func (commit *GitCommit) Serialize() []byte {
 
 	if commit.committer != nil {
 		bytes = append(bytes, "committer "...)
-		bytes = append(bytes, commit.author.String()...)
+		bytes = append(bytes, commit.committer.String()...)
 		bytes = append(bytes, '\n')
 	}
 

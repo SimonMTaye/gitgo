@@ -2,6 +2,7 @@ package objects
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 )
 
@@ -133,4 +134,14 @@ func (tree *GitTree) AddEntry(mode EntryFileMode, name string, hash string) {
 	entry := treeEntry{mode: mode, name: name, hash: hashBytes}
 	tree.entries = append(tree.entries, &entry)
 	tree.size += entry.Size()
+}
+
+// GetEntryHash Returns the hash for the specified file in the tree
+func (tree *GitTree) GetEntryHash(name string) (string, error) {
+	for _, entry := range tree.entries {
+		if entry.name == name {
+			return hex.EncodeToString(entry.hash), nil
+		}
+	}
+	return "", errors.New(fmt.Sprintf("entry '%s' not found", name))
 }

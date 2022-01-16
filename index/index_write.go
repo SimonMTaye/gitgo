@@ -222,6 +222,19 @@ func (idx *Index) AddFile(rootDir string, fileName string) error {
 	return err
 }
 
+// ModifyFileHash Sets the hash of an entry to the provided hash
+func (idx *Index) ModifyFileHash(fileName string, newHash *[20]byte) error {
+	exists, pos := idx.EntryExists(fileName)
+	if !exists {
+		return fmt.Errorf("file %s does not exist in index", fileName)
+	}
+	entry := idx.Entries[pos]
+	if entry.Metadata.ObjHash == *newHash {
+		return fmt.Errorf("file %s already has same hash", fileName)
+	}
+	return nil
+}
+
 // DeleteEntry Delete an Entry from the index
 func (idx *Index) DeleteEntry(pos int) error {
 	if pos < 0 || pos >= len(idx.Entries) {

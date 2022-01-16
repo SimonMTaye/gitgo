@@ -86,8 +86,6 @@ func (tag *GitTag) Serialize() []byte {
 
 	bytes = append(bytes, '\n')
 	bytes = append(bytes, tag.msg...)
-	bytes = append(bytes, '\n')
-
 	return bytes
 }
 
@@ -122,7 +120,7 @@ func (tag *GitTag) computeSize() int {
 
 	// +2 is for the blank \n character before the tag message
 	// and the \n inserted after the tag message
-	size += len(tag.msg) + 2
+	size += len(tag.msg) + 1
 	return size
 }
 
@@ -166,4 +164,9 @@ func (tag *GitTag) SetTaggerAndTime(name string,
 	tag.tagger = &tagger
 	return nil
 
+}
+
+// SetTagName Set the name of the tag
+func (tag *GitTag) SetTagName(name string) {
+	tag.tagName = name
 }
